@@ -1,0 +1,44 @@
+<div class="categories-page">
+  <h1 class="page-title">Ajouter une nouvelle catégorie</h1>
+  <p class="page-description">Entrez le nom de la catégorie à ajouter au système.</p>
+
+  <div *ngIf="successMessage" style="background-color: #d4edda; color: #155724; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" style="background-color: #f8d7da; color: #721c24; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+    {{ errorMessage }}
+  </div>
+
+  <div class="form-container">
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="categoryName">Nom de la catégorie</label>
+        <input
+          type="text"
+          id="categoryName"
+          [(ngModel)]="categoryName"
+          name="categoryName"
+          placeholder="Entrez le nom de la catégorie"
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-add">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0C8.41421 0 8.75 0.335786 8.75 0.75V7.25H15.25C15.6642 7.25 16 7.58579 16 8C16 8.41421 15.6642 8.75 15.25 8.75H8.75V15.25C8.75 15.6642 8.41421 16 8 16C7.58579 16 7.25 15.6642 7.25 15.25V8.75H0.75C0.335786 8.75 0 8.41421 0 8C0 7.58579 0.335786 7.25 0.75 7.25H7.25V0.75C7.25 0.335786 7.58579 0 8 0Z"/>
+          </svg>
+          Ajouter
+        </button>
+        <button type="button" class="btn-cancel" (click)="onCancel()">
+          Annuler
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+

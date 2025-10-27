@@ -1,0 +1,43 @@
+<div class="users-page">
+  <h1 class="page-title">Liste des utilisateurs</h1>
+
+  <div *ngIf="isLoading" style="text-align: center; padding: 40px;">
+    <p>Chargement des utilisateurs...</p>
+  </div>
+
+  <div *ngIf="error" style="color: red; padding: 20px; text-align: center;">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!isLoading && !error && users.length === 0" style="text-align: center; padding: 40px;">
+    <p>Aucun utilisateur trouvé.</p>
+  </div>
+
+  <div class="table-container" *ngIf="!isLoading && users.length > 0">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Numéro</th>
+          <th>Rôle</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.id }}</td>
+          <td>{{ user.nom }} {{ user.prenom }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.numeroTelephone }}</td>
+          <td>{{ user.role || 'Utilisateur' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+
+

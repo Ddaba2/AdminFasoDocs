@@ -1,0 +1,55 @@
+<div class="subcategories-page">
+  <h1 class="page-title">Ajouter une sous-catégorie</h1>
+
+  <div *ngIf="successMessage" style="background-color: #d4edda; color: #155724; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" style="background-color: #f8d7da; color: #721c24; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+    {{ errorMessage }}
+  </div>
+
+  <div class="form-container">
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="category">Catégories</label>
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="category"
+            [(ngModel)]="selectedCategory"
+            name="category"
+            placeholder="Entrez le nom de la catégorie"
+            class="form-input"
+          />
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" class="dropdown-icon">
+            <path d="M5 7.5L10 12.5L15 7.5H5Z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="subcategoryName">Nom de la sous-catégorie</label>
+        <input
+          type="text"
+          id="subcategoryName"
+          [(ngModel)]="subcategoryName"
+          name="subcategoryName"
+          placeholder="Entrez le nom"
+          class="form-input"
+        />
+      </div>
+
+      <button type="submit" class="btn-add">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C8.41421 0 8.75 0.335786 8.75 0.75V7.25H15.25C15.6642 7.25 16 7.58579 16 8C16 8.41421 15.6642 8.75 15.25 8.75H8.75V15.25C8.75 15.6642 8.41421 16 8 16C7.58579 16 7.25 15.6642 7.25 15.25V8.75H0.75C0.335786 8.75 0 8.41421 0 8C0 7.58579 0.335786 7.25 0.75 7.25H7.25V0.75C7.25 0.335786 7.58579 0 8 0Z"/>
+        </svg>
+        Ajouter
+      </button>
+    </form>
+  </div>
+</div>
+
+
+
+

@@ -1,0 +1,31 @@
+<div class="downloads-page">
+  <h1 class="page-title">Historique de téléchargement</h1>
+  
+  <div class="table-container">
+    <table class="downloads-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let download of downloads">
+          <td>{{ download.email }}</td>
+          <td>{{ download.date }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(download.status)">
+              {{ download.status }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+
+

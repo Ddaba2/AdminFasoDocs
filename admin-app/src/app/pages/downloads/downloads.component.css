@@ -1,0 +1,82 @@
+.downloads-page {
+  padding: 30px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 30px;
+  font-family: sans-serif;
+}
+
+.table-container {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.downloads-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.downloads-table thead {
+  background-color: #F5F5F5;
+}
+
+.downloads-table thead th {
+  padding: 15px 20px;
+  text-align: left;
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
+.downloads-table tbody tr {
+  border-bottom: 1px solid #E0E0E0;
+}
+
+.downloads-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.downloads-table tbody tr:hover {
+  background-color: #F9F9F9;
+}
+
+.downloads-table tbody td {
+  padding: 15px 20px;
+  color: #333;
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: sans-serif;
+}
+
+.status-badge.status-complete {
+  background-color: #6CC644;
+  color: white;
+}
+
+.status-badge.status-progress {
+  background-color: #FFA500;
+  color: white;
+}
+
+.status-badge.status-stopped {
+  background-color: #E53C2C;
+  color: white;
+}
+
+
+

@@ -1,0 +1,137 @@
+.languages-page {
+  padding: 30px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.add-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background-color: #6CC644;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: sans-serif;
+  transition: background-color 0.3s ease;
+}
+
+.add-button:hover {
+  background-color: #5DB033;
+}
+
+.add-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.table-container {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.languages-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.languages-table thead {
+  background-color: #F5F5F5;
+}
+
+.languages-table thead th {
+  padding: 15px 20px;
+  text-align: left;
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
+.languages-table tbody tr {
+  border-bottom: 1px solid #E0E0E0;
+}
+
+.languages-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.languages-table tbody tr:hover {
+  background-color: #F9F9F9;
+}
+
+.languages-table tbody td {
+  padding: 15px 20px;
+  color: #333;
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: sans-serif;
+}
+
+.status-badge.status-active {
+  background-color: #6CC644;
+  color: white;
+}
+
+.status-badge.status-inactive {
+  background-color: #666;
+  color: white;
+}
+
+.action-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-link {
+  text-decoration: underline;
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
+.action-link.modify {
+  color: #0066CC;
+}
+
+.action-link.delete {
+  color: #CC0000;
+}
+
+.action-link:hover {
+  opacity: 0.8;
+}
+
+.separator {
+  color: #CCC;
+}
+
+
+
