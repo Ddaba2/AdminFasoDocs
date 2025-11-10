@@ -1,0 +1,90 @@
+<div class="add-subcategory-page">
+      <div class="header">
+        <h1 class="page-title">Ajouter une nouvelle sous-catégorie</h1>
+      </div>
+
+      <div *ngIf="successMessage" class="alert alert-success">
+        {{ successMessage }}
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-error">
+        {{ errorMessage }}
+      </div>
+
+      <div class="form-container">
+        <form (ngSubmit)="saveSubcategory()">
+          <div class="form-group">
+            <label for="subcategoryTitle">Titre *</label>
+            <input
+              type="text"
+              id="subcategoryTitle"
+              [(ngModel)]="subcategoryForm.titre"
+              name="subcategoryTitle"
+              placeholder="Entrez le titre de la sous-catégorie (max 100 caractères)"
+              class="form-input"
+              maxlength="100"
+            />
+            <small class="form-text">Texte de maximum 100 caractères, doit être unique</small>
+          </div>
+
+          <div class="form-group">
+            <label for="categoryId">Catégorie parente *</label>
+            <select
+              id="categoryId"
+              [(ngModel)]="subcategoryForm.categorieId"
+              name="categoryId"
+              class="form-input"
+              [disabled]="isCategoriesLoading"
+            >
+              <option value="">Sélectionnez une catégorie</option>
+              <option *ngFor="let category of categories" [value]="category.id">
+                {{ category.titre }} ({{ category.nomCategorie }})
+              </option>
+            </select>
+            <small class="form-text">L'identifiant de la catégorie parente</small>
+            <div *ngIf="isCategoriesLoading" class="loading-text">Chargement des catégories...</div>
+          </div>
+
+          <div class="form-group">
+            <label for="subcategoryDescription">Description</label>
+            <textarea
+              id="subcategoryDescription"
+              [(ngModel)]="subcategoryForm.description"
+              name="subcategoryDescription"
+              placeholder="Entrez la description de la sous-catégorie (max 500 caractères)"
+              class="form-input"
+              rows="3"
+              maxlength="500"
+            ></textarea>
+            <small class="form-text">Texte descriptif de la sous-catégorie, maximum 500 caractères</small>
+          </div>
+
+          <div class="form-group">
+            <label for="subcategoryIconUrl">URL de l'icône</label>
+            <input
+              type="text"
+              id="subcategoryIconUrl"
+              [(ngModel)]="subcategoryForm.iconeUrl"
+              name="subcategoryIconUrl"
+              placeholder="Entrez l'URL de l'icône"
+              class="form-input"
+            />
+            <small class="form-text">URL vers une icône représentant la sous-catégorie</small>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-save" [disabled]="isLoading || isCategoriesLoading">
+              <span *ngIf="isLoading" class="spinner"></span>
+              <svg *ngIf="!isLoading" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 0C8.41421 0 8.75 0.335786 8.75 0.75V7.25H15.25C15.6642 7.25 16 7.58579 16 8C16 8.41421 15.6642 8.75 15.25 8.75H8.75V15.25C8.75 15.6642 8.41421 16 8 16C7.58579 16 7.25 15.6642 7.25 15.25V8.75H0.75C0.335786 8.75 0 8.41421 0 8C0 7.58579 0.335786 7.25 0.75 7.25H7.25V0.75C7.25 0.335786 7.58579 0 8 0Z"/>
+              </svg>
+              <span *ngIf="!isLoading">Ajouter</span>
+              <span *ngIf="isLoading">Ajout...</span>
+            </button>
+            <button type="button" class="btn-cancel" (click)="cancel()" [disabled]="isLoading || isCategoriesLoading">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>

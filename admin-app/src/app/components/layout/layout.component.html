@@ -77,5 +77,12 @@
     </header>
     <router-outlet></router-outlet>
   </main>
+  
+  <!-- Custom Dialog -->
+  <app-confirm-dialog 
+    *ngIf="showConfirmDialog && dialogData" 
+    [data]="dialogData"
+    (confirm)="onConfirm()"
+    (cancel)="onCancel()">
+  </app-confirm-dialog>
 </div>
-

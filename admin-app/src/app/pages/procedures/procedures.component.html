@@ -1,271 +1,100 @@
-<div class="procedures-page">
-  <h1 class="page-title">Ajouter une nouvelle procédure</h1>
-  <p class="page-description">Remplissez les détails ci-dessous pour ajouter une nouvelle procédure au système.</p>
+<div class="page-container">
+  <div class="page-header">
+    <h1>Gestion des Procédures</h1>
+    <button 
+      class="btn-primary" 
+      (click)="addProcedure()"
+      [disabled]="isLoading"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+      </svg>
+      Ajouter une procédure
+    </button>
+  </div>
 
-  <div *ngIf="successMessage" style="background-color: #d4edda; color: #155724; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+    </svg>
     {{ successMessage }}
   </div>
 
-  <div *ngIf="errorMessage" style="background-color: #f8d7da; color: #721c24; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+    </svg>
     {{ errorMessage }}
   </div>
 
-  <form (ngSubmit)="onSubmit()">
-    <!-- General Information Section -->
-    <div class="form-section">
-      <div class="section-header">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-          <path d="M10 7V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="10" cy="14" r="0.75" fill="currentColor"/>
-        </svg>
-        <h2 class="section-title">Informations générales</h2>
-      </div>
+  <!-- Loading -->
+  <div *ngIf="isLoading && procedures.length === 0" class="loading">
+    <div class="spinner"></div>
+    <p>Chargement des procédures...</p>
+  </div>
 
-      <div class="form-group">
-        <label for="procedureName">Nom de la procédure</label>
-        <input
-          type="text"
-          id="procedureName"
-          [(ngModel)]="procedureName"
-          name="procedureName"
-          placeholder="Entrez le nom de la procédure"
-          class="form-input"
-        />
-      </div>
+  <!-- Tableau des procédures -->
+  <div *ngIf="procedures.length > 0" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 35%;">Nom</th>
+          <th style="width: 20%;">Catégorie</th>
+          <th style="width: 20%;">Sous-catégorie</th>
+          <th style="width: 120px;" class="actions-column">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let procedure of procedures">
+          <td><strong>{{ procedure.nom }}</strong></td>
+          <td>
+            <span class="category-badge">
+              {{ procedure.categorie?.titre || procedure.categorie?.nom || getCategoryName(procedure.categorieId) }}
+            </span>
+          </td>
+          <td>
+            <span class="subcategory-badge" *ngIf="procedure.sousCategorieId">
+              {{ procedure.sousCategorie?.nom || getSubcategoryName(procedure.sousCategorieId) }}
+            </span>
+            <span *ngIf="!procedure.sousCategorieId">—</span>
+          </td>
+          <td class="actions-column">
+            <button 
+              class="btn-edit" 
+              (click)="editProcedure(procedure)"
+              title="Modifier"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+              </svg>
+            </button>
+            <button 
+              class="btn-delete" 
+              (click)="deleteProcedure(procedure)"
+              title="Supprimer"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+              </svg>
+            </button>
+          </td>
 
-      <div class="form-group">
-        <label for="category">Catégorie</label>
-        <input
-          type="text"
-          id="category"
-          [(ngModel)]="selectedCategory"
-          name="category"
-          placeholder="Entrez le nom de la catégorie"
-          class="form-input"
-        />
-      </div>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-      <div class="form-group">
-        <label for="subCategory">Sous-catégorie</label>
-        <input
-          type="text"
-          id="subCategory"
-          [(ngModel)]="selectedSubCategory"
-          name="subCategory"
-          placeholder="Entrez le nom de la sous-catégorie"
-          class="form-input"
-        />
-      </div>
-    </div>
-
-    <!-- Steps Section -->
-    <div class="form-section">
-      <div class="section-header">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M6 4L10 8L14 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
-          <rect x="3" y="6" width="14" height="12" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
-          <path d="M6 10H14" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M6 13H12" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
-        <h2 class="section-title">Étapes à suivre</h2>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group half">
-          <label for="stepName">Nom</label>
-          <input
-            type="text"
-            id="stepName"
-            [(ngModel)]="stepName"
-            name="stepName"
-            placeholder="Entrez le nom de la procédure"
-            class="form-input"
-          />
-        </div>
-
-        <div class="form-group half">
-          <label for="stepLevel">Niveau</label>
-          <input
-            type="text"
-            id="stepLevel"
-            [(ngModel)]="stepLevel"
-            name="stepLevel"
-            placeholder="Ex : 1"
-            class="form-input"
-          />
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="stepDescription">Description</label>
-        <textarea
-          id="stepDescription"
-          [(ngModel)]="stepDescription"
-          name="stepDescription"
-          placeholder="Description"
-          class="form-textarea"
-          rows="4"
-        ></textarea>
-      </div>
-
-      <button type="button" class="btn-add-section" (click)="addStep()">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0C8.41421 0 8.75 0.335786 8.75 0.75V7.25H15.25C15.6642 7.25 16 7.58579 16 8C16 8.41421 15.6642 8.75 15.25 8.75H8.75V15.25C8.75 15.6642 8.41421 16 8 16C7.58579 16 7.25 15.6642 7.25 15.25V8.75H0.75C0.335786 8.75 0 8.41421 0 8C0 7.58579 0.335786 7.25 0.75 7.25H7.25V0.75C7.25 0.335786 7.58579 0 8 0Z"/>
-        </svg>
-        Ajouter une étape
-      </button>
-    </div>
-
-    <!-- Required Documents Section -->
-    <div class="form-section">
-      <div class="section-header">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M4 2C3.44772 2 3 2.44772 3 3V17C3 17.5523 3.44772 18 4 18H16C16.5523 18 17 17.5523 17 17V6L12 1H4Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-          <path d="M12 1V6H17" stroke="currentColor" stroke-width="1.5"/>
-          <rect x="5" y="9" width="10" height="1.5" rx="0.75"/>
-          <rect x="5" y="12" width="10" height="1.5" rx="0.75"/>
-        </svg>
-        <h2 class="section-title">Documents requis</h2>
-      </div>
-
-      <div class="form-group">
-        <label for="documentName">Nom</label>
-        <input
-          type="text"
-          id="documentName"
-          [(ngModel)]="documentName"
-          name="documentName"
-          placeholder="Entrez le nom du document"
-          class="form-input"
-        />
-      </div>
-
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input
-            type="checkbox"
-            [(ngModel)]="documentRequired"
-            name="documentRequired"
-            class="checkbox-input"
-          />
-          <span>Obligatoire</span>
-        </label>
-      </div>
-
-      <div class="form-group">
-        <label for="documentDescription">Description</label>
-        <textarea
-          id="documentDescription"
-          [(ngModel)]="documentDescription"
-          name="documentDescription"
-          placeholder="Description"
-          class="form-textarea"
-          rows="4"
-        ></textarea>
-      </div>
-
-      <button type="button" class="btn-add-section" (click)="addDocument()">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0C8.41421 0 8.75 0.335786 8.75 0.75V7.25H15.25C15.6642 7.25 16 7.58579 16 8C16 8.41421 15.6642 8.75 15.25 8.75H8.75V15.25C8.75 15.6642 8.41421 16 8 16C7.58579 16 7.25 15.6642 7.25 15.25V8.75H0.75C0.335786 8.75 0 8.41421 0 8C0 7.58579 0.335786 7.25 0.75 7.25H7.25V0.75C7.25 0.335786 7.58579 0 8 0Z"/>
-        </svg>
-        Ajouter un document
-      </button>
-    </div>
-
-    <!-- Processing Time Section -->
-    <div class="form-section">
-      <div class="section-header">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M10 2C14.4183 2 18 5.58172 18 10C18 14.4183 14.4183 18 10 18C5.58172 18 2 14.4183 2 10C2 5.58172 5.58172 2 10 2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-          <path d="M10 5V10L13 13" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
-        <h2 class="section-title">Délai de traitement</h2>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group half">
-          <input
-            type="text"
-            [(ngModel)]="processingTime"
-            name="processingTime"
-            placeholder="EX : 5"
-            class="form-input"
-          />
-        </div>
-
-        <div class="form-group half">
-          <select
-            [(ngModel)]="selectedTimeUnit"
-            name="selectedTimeUnit"
-            class="form-select"
-          >
-            <option value="Jours">Jours</option>
-            <option value="Semaines">Semaines</option>
-            <option value="Mois">Mois</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Treatment Centers Section -->
-    <div class="form-section">
-      <div class="section-header">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-          <rect x="2" y="4" width="16" height="14" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
-          <path d="M7 4V10" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M13 4V10" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
-        <h2 class="section-title">Centres de traitements</h2>
-      </div>
-
-      <div class="form-group">
-        <input
-          type="text"
-          [(ngModel)]="selectedCenter"
-          name="selectedCenter"
-          placeholder="Entrez le nom du centre de traitement"
-          class="form-input"
-        />
-      </div>
-    </div>
-
-    <!-- Law Reference Section -->
-    <div class="form-section">
-      <div class="section-header">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M4 4L8 7L4 10V4Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-          <path d="M6 17H16C16.5523 17 17 16.5523 17 16V4C17 3.44772 16.5523 3 16 3H6" stroke="currentColor" stroke-width="1.5" fill="none"/>
-        </svg>
-        <h2 class="section-title">Référence de loi</h2>
-      </div>
-
-      <div class="form-group">
-        <label for="lawReference">Texte de loi ou référence de loi</label>
-        <textarea
-          id="lawReference"
-          [(ngModel)]="lawReference"
-          name="lawReference"
-          placeholder="Entre le texte de loi ou la référence..."
-          class="form-textarea"
-          rows="4"
-        ></textarea>
-      </div>
-    </div>
-
-    <!-- Save Button -->
-    <div class="form-actions">
-      <button type="submit" class="btn-save">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M16 2H4C2.89543 2 2 2.89543 2 4V16C2 17.1046 2.89543 18 4 18H16C17.1046 18 18 17.1046 18 16V5L16 2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-          <path d="M16 2V5H18" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M5 9L8 12L15 5" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
-        Sauvegarder
-      </button>
-    </div>
-  </form>
+  <!-- Aucune donnée -->
+  <div *ngIf="!isLoading && procedures.length === 0" class="no-data">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+    <p>Aucune procédure trouvée</p>
+    <button class="btn-primary" (click)="addProcedure()">
+      Ajouter la première procédure
+    </button>
+  </div>
 </div>
-
-
 

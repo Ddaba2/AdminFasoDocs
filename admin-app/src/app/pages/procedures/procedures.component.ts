@@ -1,30 +1,46 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { DialogService } from '../../services/dialog.service';
+import { DataCacheService } from '../../services/data-cache.service';
+import { Subscription } from 'rxjs';
+
+interface Procedure {
+  id: number;
+  nom: string;
+  description?: string;
+  categorieId: number;
+  sousCategorieId?: number;
+  categorie?: {
+    id: number;
+    nom: string;
+    titre?: string;
+  };
+  sousCategorie?: {
+    id: number;
+    nom: string;
+  };
+  delaiTraitement?: {
+    duree: number;
+    unite: string;
+  };
+  etapes?: any[];
+  documents?: any[];
+  centres?: string[];
+  referenceLoi?: string;
+  isEditing?: boolean;
+}
 
 /**
- * Composant de gestion des procédures administratives
- *
- * Ce composant permet de créer et gérer les procédures administratives du système FasoDocs.
- * Une procédure contient:
- * - Informations générales (nom, titre, description)
- * - Catégorie et sous-catégorie
- * - Délai de traitement
- * - Centre de traitement
- * - Documents requis
- * - Étapes à suivre
- * - Références légales
- *
+ * Composant de gestion des procédures
+ * 
  * Fonctionnalités:
- * - Création de nouvelles procédures
- *
- * À implémenter:
- * - Ajout dynamique d'étapes (addStep)
- * - Ajout dynamique de documents (addDocument)
- * - Affichage de la liste des procédures existantes
- * - Modification des procédures
- * - Suppression des procédures
+ * - Liste toutes les procédures avec catégorie et sous-catégorie
+ * - Édition inline simplifiée (nom, description, délai)
+ * - Suppression avec confirmation
+ * - Navigation vers l'ajout (pour création complète avec étapes, docs, etc.)
  */
 @Component({
   selector: 'app-procedures',
@@ -33,146 +49,196 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './procedures.component.html',
   styleUrl: './procedures.component.css'
 })
-export class ProceduresComponent {
-  // ====================
-  // Champs du formulaire de procédure
-  // ====================
-
-  // Nom/titre de la procédure
-  procedureName = '';
-
-  // ID de la catégorie sélectionnée
-  selectedCategory = '';
-
-  // ID de la sous-catégorie sélectionnée (optionnel)
-  selectedSubCategory = '';
-
-  // Informations pour les étapes de la procédure
-  stepName = '';
-  stepLevel = '';
-  stepDescription = '';
-
-  // Informations pour les documents requis
-  documentName = '';
-  documentRequired = false;
-  documentDescription = '';
-
-  // Délai de traitement
-  processingTime = '';
-  selectedTimeUnit = 'Jours';
-
-  // Centre de traitement de la procédure
-  selectedCenter = '';
-
-  // Références légales
-  lawReference = '';
-
-  // ====================
-  // États de l'interface
-  // ====================
-
-  // Indicateur de chargement pendant la requête API
+export class ProceduresComponent implements OnInit, OnDestroy {
+  procedures: Procedure[] = [];
+  categories: any[] = [];
+  subcategories: any[] = [];
   isLoading = false;
-
-  // Message de succès à afficher après création
-  successMessage = '';
-
-  // Message d'erreur à afficher en cas d'échec
   errorMessage = '';
+  successMessage = '';
+  
+  // Subscriptions pour le cache
+  private proceduresSubscription?: Subscription;
+  private categoriesSubscription?: Subscription;
+  private subcategoriesSubscription?: Subscription;
+
+  constructor(
+    private apiService: ApiService,
+    private dialogService: DialogService,
+    private router: Router,
+    private dataCache: DataCacheService
+  ) {}
+
+  ngOnInit() {
+    // S'abonner au cache pour les mises à jour en temps réel
+    this.categoriesSubscription = this.dataCache.categories$.subscribe({
+      next: (categories) => {
+        this.categories = categories;
+      }
+    });
+
+    this.subcategoriesSubscription = this.dataCache.subcategories$.subscribe({
+      next: (subcategories) => {
+        this.subcategories = subcategories;
+      }
+    });
+
+    this.proceduresSubscription = this.dataCache.procedures$.subscribe({
+      next: (procedures) => {
+        this.procedures = procedures.map(proc => ({ ...proc, isEditing: false }));
+      }
+    });
+
+    // Charger les données seulement si le cache est vide
+    if (this.dataCache.getCategories().length === 0) {
+      this.loadCategories();
+    }
+    if (this.dataCache.getSubcategories().length === 0) {
+      this.loadSubcategories();
+    }
+    if (this.dataCache.getProcedures().length === 0) {
+      this.loadProcedures();
+    }
+  }
+
+  ngOnDestroy() {
+    this.categoriesSubscription?.unsubscribe();
+    this.subcategoriesSubscription?.unsubscribe();
+    this.proceduresSubscription?.unsubscribe();
+  }
 
   /**
-   * Constructeur du composant Procedures
-   * @param apiService - Service API pour les appels backend
+   * Charge la liste des catégories
    */
-  constructor(private apiService: ApiService) {}
+  loadCategories() {
+    this.apiService.getCategories().subscribe({
+      next: (response: any[]) => {
+        this.dataCache.setCategories(response);
+      },
+      error: (err) => {
+        console.error('Error loading categories:', err);
+      }
+    });
+  }
 
   /**
-   * Méthode appelée lors de la soumission du formulaire de procédure
-   *
-   * Flux:
-   * 1. Validation des champs requis (nom et catégorie)
-   * 2. Préparation des données au format attendu par le backend
-   * 3. Appel au service API pour créer la procédure
-   * 4. En cas de succès: affichage message et réinitialisation du formulaire
-   * 5. En cas d'erreur: affichage du message d'erreur
+   * Charge la liste des sous-catégories
    */
-  onSubmit() {
+  loadSubcategories() {
+    this.apiService.getSousCategories().subscribe({
+      next: (response: any[]) => {
+        this.dataCache.setSubcategories(response);
+      },
+      error: (err) => {
+        console.error('Error loading subcategories:', err);
+      }
+    });
+  }
+
+  /**
+   * Charge la liste des procédures depuis le backend
+   */
+  loadProcedures() {
+    this.isLoading = true;
     this.errorMessage = '';
     this.successMessage = '';
 
-    // Validation des champs requis
-    if (!this.procedureName || !this.selectedCategory) {
-      this.errorMessage = 'Veuillez remplir tous les champs requis';
-      return;
-    }
-
-    this.isLoading = true;
-
-    // Préparation des données au format attendu par le backend
-    const procedureData = {
-      nom: this.procedureName,
-      titre: this.procedureName,
-      description: this.lawReference || '',
-      delai: `${this.processingTime} ${this.selectedTimeUnit}`,
-      categorieId: this.selectedCategory,
-      sousCategorieId: this.selectedSubCategory || null,
-      centreTraitement: this.selectedCenter || '',
-      cout: null,
-      documentsRequis: [], // Liste vide pour l'instant (à implémenter)
-      etapes: [], // Liste vide pour l'instant (à implémenter)
-      referencesLegales: []
-    };
-
-    // Appel API pour créer la procédure
-    this.apiService.createProcedure(procedureData).subscribe({
-      next: (response) => {
-        console.log('Procedure created:', response);
-        this.successMessage = 'Procédure créée avec succès!';
+    this.apiService.getProcedures().subscribe({
+      next: (response: any[]) => {
+        this.dataCache.setProcedures(response);
         this.isLoading = false;
-        // Réinitialisation du formulaire après succès
-        this.resetForm();
       },
-      error: (error) => {
-        console.error('Error creating procedure:', error);
-        this.errorMessage = error.error?.message || 'Erreur lors de la création de la procédure';
+      error: (err) => {
+        console.error('Error loading procedures:', err);
+        this.errorMessage = 'Erreur lors du chargement des procédures';
         this.isLoading = false;
       }
     });
   }
 
   /**
-   * Réinitialise tous les champs du formulaire
-   * Utilisé après une création réussie ou en cas d'annulation
+   * Navigue vers la page d'ajout de procédure
    */
-  resetForm() {
-    this.procedureName = '';
-    this.selectedCategory = '';
-    this.selectedSubCategory = '';
-    this.lawReference = '';
-    this.processingTime = '';
-    this.selectedCenter = '';
-    this.selectedTimeUnit = 'Jours';
+  addProcedure() {
+    this.router.navigate(['/procedures/add']);
   }
 
   /**
-   * Ajoute une étape à la procédure
-   *
-   * TODO: Implémenter la logique pour gérer les étapes dynamiquement
-   * Les étapes doivent être stockées dans un tableau et ajoutées à procedureData
+   * Navigue vers la page d'édition d'une procédure
    */
-  addStep() {
-    // TODO: Implémenter la logique pour ajouter des étapes
-    console.log('Add step');
+  editProcedure(procedure: Procedure) {
+    this.router.navigate(['/procedures/edit', procedure.id]);
   }
 
   /**
-   * Ajoute un document requis à la procédure
-   *
-   * TODO: Implémenter la logique pour gérer les documents requis dynamiquement
-   * Les documents doivent être stockés dans un tableau et ajoutés à procedureData
+   * Supprime une procédure avec confirmation
    */
-  addDocument() {
-    // TODO: Implémenter la logique pour ajouter des documents
-    console.log('Add document');
+  deleteProcedure(procedure: Procedure) {
+    this.dialogService.confirm({
+      title: 'Confirmation de suppression',
+      message: `Êtes-vous sûr de vouloir supprimer la procédure "${procedure.nom}" ?`,
+      confirmText: 'Supprimer',
+      type: 'delete'
+    }).subscribe(result => {
+      if (result.confirmed) {
+        this.isLoading = true;
+        this.apiService.deleteProcedure(procedure.id).subscribe({
+          next: (response) => {
+            console.log('Procedure deleted:', response);
+            // Mettre à jour le cache (synchronisation en temps réel)
+            this.dataCache.removeProcedure(procedure.id);
+            this.successMessage = 'Procédure supprimée avec succès!';
+            this.isLoading = false;
+            
+            // Cacher le message après 3 secondes
+            setTimeout(() => {
+              this.successMessage = '';
+            }, 3000);
+          },
+          error: (error) => {
+            console.error('Error deleting procedure:', error);
+            this.errorMessage = error.error?.message || 'Erreur lors de la suppression de la procédure';
+            this.isLoading = false;
+          }
+        });
+      }
+    });
+  }
+
+
+  /**
+   * Récupère le nom de la catégorie
+   */
+  getCategoryName(categorieId: number): string {
+    const category = this.categories.find(cat => cat.id === categorieId);
+    return category ? (category.titre || category.nom) : 'N/A';
+  }
+
+  /**
+   * Récupère le nom de la sous-catégorie
+   */
+  getSubcategoryName(sousCategorieId: number | undefined): string {
+    if (!sousCategorieId) return '—';
+    const subcategory = this.subcategories.find(sub => sub.id === sousCategorieId);
+    return subcategory ? subcategory.nom : 'N/A';
+  }
+
+  /**
+   * Formate le délai de traitement pour l'affichage
+   */
+  formatDelai(delai: any): string {
+    if (!delai || !delai.duree) return '—';
+    const unite = delai.unite === 'JOURS' ? 'jour(s)' :
+                  delai.unite === 'SEMAINES' ? 'semaine(s)' :
+                  delai.unite === 'MOIS' ? 'mois' : delai.unite;
+    return `${delai.duree} ${unite}`;
+  }
+
+  /**
+   * Filtre les sous-catégories selon la catégorie sélectionnée
+   */
+  getFilteredSubcategories(categorieId: number): any[] {
+    return this.subcategories.filter(sub => sub.categorieId === categorieId);
   }
 }
+

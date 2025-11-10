@@ -1,7 +1,8 @@
 import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
+import { StorageService } from './storage.service';
 
 /**
  * URL de base de l'API backend Spring Boot
@@ -34,19 +35,28 @@ export class ApiService {
    * Constructeur du service API
    * @param http - Service HttpClient d'Angular pour les requêtes HTTP
    * @param platformId - ID de la plateforme (browser/server) pour vérifier l'environnement
+   * @param storageService - Service for safe storage operations
    */
   constructor(
     private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private storageService: StorageService
   ) {
-    // Récupération du token depuis sessionStorage uniquement côté browser
+    // Récupération du token depuis storage uniquement côté browser
     // Important pour le SSR (Server-Side Rendering)
+    this.initializeToken();
+  }
+
+  /**
+   * Initialize token from storage safely
+   */
+  private initializeToken(): void {
     if (isPlatformBrowser(this.platformId)) {
       try {
-        this.token = sessionStorage.getItem('token');
+        this.token = this.storageService.getItem('token');
       } catch (e) {
-        console.warn('sessionStorage not available:', e);
-        this.token = null;
+        console.warn('Could not initialize token from storage:', e);
+        // Token will remain null, which is safe
       }
     }
   }
@@ -75,22 +85,63 @@ export class ApiService {
   // ====================
 
   /**
-   * Authentifie un utilisateur sur le backend
-   * Envoie les credentials (nomUtilisateur et motDePasse) au backend Spring Boot
-   *
-   * @param username - Nom d'utilisateur
-   * @param password - Mot de passe en clair
-   * @returns Observable avec la réponse contenant le token JWT
+   * Send phone number to receive SMS code
+   * @param phoneNumber - Phone number to send verification code to
+   * @returns Observable with the response
    */
-  login(username: string, password: string): Observable<any> {
-    return this.http.post(`${API_URL}/auth/connexion`, {
-      nomUtilisateur: username,
-      motDePasse: password
-    });
+  sendSmsCode(phoneNumber: string): Observable<any> {
+    console.log('Sending SMS code request for phone number:', phoneNumber);
+    const request = {
+      telephone: phoneNumber
+    };
+    console.log('Request body:', request);
+    
+    const observable = this.http.post(`${API_URL}/auth/connexion-telephone`, request).pipe(
+      tap({
+        next: (response) => {
+          console.log('SMS code request successful, response:', response);
+        },
+        error: (error) => {
+          console.error('SMS code request failed, error:', error);
+        }
+      })
+    );
+    console.log('Created HTTP observable for SMS code request');
+    
+    return observable;
   }
 
   /**
-   * Définit le token JWT et le stocke dans sessionStorage
+   * Verify SMS code for authentication
+   * @param phoneNumber - Phone number that received the code
+   * @param code - 4-digit verification code
+   * @returns Observable with the authentication response containing token
+   */
+  verifySmsCode(phoneNumber: string, code: string): Observable<any> {
+    console.log('Verifying SMS code for phone number:', phoneNumber, 'with code:', code);
+    const request = {
+      telephone: phoneNumber,
+      code: code
+    };
+    console.log('Request body:', request);
+    
+    const observable = this.http.post(`${API_URL}/auth/verifier-sms`, request).pipe(
+      tap({
+        next: (response) => {
+          console.log('SMS verification request successful, response:', response);
+        },
+        error: (error) => {
+          console.error('SMS verification request failed, error:', error);
+        }
+      })
+    );
+    console.log('Created HTTP observable for SMS verification request');
+    
+    return observable;
+  }
+
+  /**
+   * Définit le token JWT et le stocke dans storage
    * Appelé après une connexion réussie
    *
    * @param token - Token JWT retourné par le backend
@@ -98,27 +149,34 @@ export class ApiService {
   setToken(token: string) {
     this.token = token;
     if (isPlatformBrowser(this.platformId)) {
-      try {
-        sessionStorage.setItem('token', token);
-      } catch (e) {
-        console.warn('sessionStorage not available:', e);
-      }
+      this.storageService.setItem('token', token);
+    }
+  }
+
+  /**
+   * Get the current JWT token
+   * @returns The current token or null if not set
+   */
+  getToken(): string | null {
+    return this.token;
+  }
+
+  /**
+   * Clear the current JWT token
+   */
+  clearToken() {
+    this.token = null;
+    if (isPlatformBrowser(this.platformId)) {
+      this.storageService.removeItem('token');
     }
   }
 
   /**
    * Supprime le token JWT et déconnecte l'utilisateur
-   * Supprime également le token du sessionStorage
+   * Supprime également le token du storage
    */
   logout() {
-    this.token = null;
-    if (isPlatformBrowser(this.platformId)) {
-      try {
-        sessionStorage.removeItem('token');
-      } catch (e) {
-        console.warn('sessionStorage not available:', e);
-      }
-    }
+    this.clearToken();
   }
 
   // ====================
@@ -130,7 +188,7 @@ export class ApiService {
    * @returns Observable avec la liste des catégories
    */
   getCategories(): Observable<any> {
-    return this.http.get(`${API_URL}/categories`, { headers: this.getHeaders() });
+    return this.http.get(`${API_URL}/admin/categories`, { headers: this.getHeaders() });
   }
 
   /**
@@ -139,7 +197,7 @@ export class ApiService {
    * @returns Observable avec la catégorie créée
    */
   createCategory(category: any): Observable<any> {
-    return this.http.post(`${API_URL}/categories`, category, { headers: this.getHeaders() });
+    return this.http.post(`${API_URL}/admin/categories`, category, { headers: this.getHeaders() });
   }
 
   /**
@@ -149,7 +207,7 @@ export class ApiService {
    * @returns Observable avec la catégorie mise à jour
    */
   updateCategory(id: number, category: any): Observable<any> {
-    return this.http.put(`${API_URL}/categories/${id}`, category, { headers: this.getHeaders() });
+    return this.http.put(`${API_URL}/admin/categories/${id}`, category, { headers: this.getHeaders() });
   }
 
   /**
@@ -158,7 +216,7 @@ export class ApiService {
    * @returns Observable avec la réponse de suppression
    */
   deleteCategory(id: number): Observable<any> {
-    return this.http.delete(`${API_URL}/categories/${id}`, { headers: this.getHeaders() });
+    return this.http.delete(`${API_URL}/admin/categories/${id}`, { headers: this.getHeaders() });
   }
 
   // ====================
@@ -170,7 +228,7 @@ export class ApiService {
    * @returns Observable avec la liste des sous-catégories
    */
   getSousCategories(): Observable<any> {
-    return this.http.get(`${API_URL}/sous-categories`, { headers: this.getHeaders() });
+    return this.http.get(`${API_URL}/admin/sous-categories`, { headers: this.getHeaders() });
   }
 
   /**
@@ -179,7 +237,7 @@ export class ApiService {
    * @returns Observable avec la sous-catégorie créée
    */
   createSousCategorie(sousCategorie: any): Observable<any> {
-    return this.http.post(`${API_URL}/sous-categories`, sousCategorie, { headers: this.getHeaders() });
+    return this.http.post(`${API_URL}/admin/sous-categories`, sousCategorie, { headers: this.getHeaders() });
   }
 
   /**
@@ -189,7 +247,7 @@ export class ApiService {
    * @returns Observable avec la sous-catégorie mise à jour
    */
   updateSousCategorie(id: number, sousCategorie: any): Observable<any> {
-    return this.http.put(`${API_URL}/sous-categories/${id}`, sousCategorie, { headers: this.getHeaders() });
+    return this.http.put(`${API_URL}/admin/sous-categories/${id}`, sousCategorie, { headers: this.getHeaders() });
   }
 
   /**
@@ -198,7 +256,31 @@ export class ApiService {
    * @returns Observable avec la réponse de suppression
    */
   deleteSousCategorie(id: number): Observable<any> {
-    return this.http.delete(`${API_URL}/sous-categories/${id}`, { headers: this.getHeaders() });
+    return this.http.delete(`${API_URL}/admin/sous-categories/${id}`, { headers: this.getHeaders() });
+  }
+
+  // ====================
+  // CENTRES
+  // ====================
+
+  /**
+   * Récupère tous les centres depuis le backend
+   * @returns Observable avec la liste des centres
+   */
+  getCentres(): Observable<any> {
+    return this.http.get(`${API_URL}/centres`);
+  }
+
+  // ====================
+  // COUTS
+  // ====================
+
+  /**
+   * Récupère tous les coûts depuis le backend
+   * @returns Observable avec la liste des coûts
+   */
+  getCouts(): Observable<any> {
+    return this.http.get(`${API_URL}/couts`);
   }
 
   // ====================
@@ -210,7 +292,7 @@ export class ApiService {
    * @returns Observable avec la liste des procédures
    */
   getProcedures(): Observable<any> {
-    return this.http.get(`${API_URL}/procedures`, { headers: this.getHeaders() });
+    return this.http.get(`${API_URL}/admin/procedures`, { headers: this.getHeaders() });
   }
 
   /**
@@ -219,7 +301,7 @@ export class ApiService {
    * @returns Observable avec la procédure créée
    */
   createProcedure(procedure: any): Observable<any> {
-    return this.http.post(`${API_URL}/procedures`, procedure, { headers: this.getHeaders() });
+    return this.http.post(`${API_URL}/admin/procedures`, procedure, { headers: this.getHeaders() });
   }
 
   /**
@@ -229,7 +311,7 @@ export class ApiService {
    * @returns Observable avec la procédure mise à jour
    */
   updateProcedure(id: number, procedure: any): Observable<any> {
-    return this.http.put(`${API_URL}/procedures/${id}`, procedure, { headers: this.getHeaders() });
+    return this.http.put(`${API_URL}/admin/procedures/${id}`, procedure, { headers: this.getHeaders() });
   }
 
   /**
@@ -238,7 +320,7 @@ export class ApiService {
    * @returns Observable avec la réponse de suppression
    */
   deleteProcedure(id: number): Observable<any> {
-    return this.http.delete(`${API_URL}/procedures/${id}`, { headers: this.getHeaders() });
+    return this.http.delete(`${API_URL}/admin/procedures/${id}`, { headers: this.getHeaders() });
   }
 
   // ====================
@@ -250,6 +332,49 @@ export class ApiService {
    * @returns Observable avec la liste des utilisateurs
    */
   getUsers(): Observable<any> {
-    return this.http.get(`${API_URL}/users`, { headers: this.getHeaders() });
+    return this.http.get(`${API_URL}/admin/utilisateurs`, { headers: this.getHeaders() });
+  }
+  
+  /**
+   * Crée un nouvel utilisateur
+   * @param user - Objet utilisateur contenant les informations
+   * @returns Observable avec l'utilisateur créé
+   */
+  createUser(user: any): Observable<any> {
+    return this.http.post(`${API_URL}/admin/utilisateurs`, user, { headers: this.getHeaders() });
+  }
+  
+  /**
+   * Met à jour un utilisateur existant
+   * @param id - ID de l'utilisateur à mettre à jour
+   * @param user - Objet utilisateur avec les nouvelles données
+   * @returns Observable avec l'utilisateur mis à jour
+   */
+  updateUser(id: number, user: any): Observable<any> {
+    return this.http.put(`${API_URL}/admin/utilisateurs/${id}`, user, { headers: this.getHeaders() });
+  }
+  
+  /**
+   * Supprime un utilisateur
+   * @param id - ID de l'utilisateur à supprimer
+   * @returns Observable avec la réponse de suppression
+   */
+  deleteUser(id: number): Observable<any> {
+    return this.http.delete(`${API_URL}/admin/utilisateurs/${id}`, { headers: this.getHeaders() });
+  }
+  
+  /**
+   * Helper methods for storage operations
+   */
+  setStorageItem(key: string, value: string): void {
+    this.storageService.setItem(key, value);
+  }
+  
+  getStorageItem(key: string): string | null {
+    return this.storageService.getItem(key);
+  }
+  
+  removeStorageItem(key: string): void {
+    this.storageService.removeItem(key);
   }
 }

@@ -6,7 +6,6 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
     "serve:ssr:admin-app": "node dist/admin-app/server/server.mjs"
   },
   "prettier": {

@@ -1,55 +1,152 @@
-<div class="subcategories-page">
-  <h1 class="page-title">Ajouter une sous-catégorie</h1>
+<div class="page-container">
+  <div class="page-header">
+    <h1>Gestion des Sous-Catégories</h1>
+    <button
+      class="btn-primary"
+      (click)="addSubcategory()"
+      [disabled]="isLoading || hasActiveEdit()"
+    >
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+      </svg>
+      Ajouter une sous-catégorie
+    </button>
+  </div>
 
-  <div *ngIf="successMessage" style="background-color: #d4edda; color: #155724; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+    </svg>
     {{ successMessage }}
   </div>
 
-  <div *ngIf="errorMessage" style="background-color: #f8d7da; color: #721c24; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+    </svg>
     {{ errorMessage }}
   </div>
 
-  <div class="form-container">
-    <form (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="category">Catégories</label>
-        <div class="input-wrapper">
-          <input
-            type="text"
-            id="category"
-            [(ngModel)]="selectedCategory"
-            name="category"
-            placeholder="Entrez le nom de la catégorie"
-            class="form-input"
-          />
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" class="dropdown-icon">
-            <path d="M5 7.5L10 12.5L15 7.5H5Z"/>
-          </svg>
-        </div>
-      </div>
+  <!-- Loading -->
+  <div *ngIf="isLoading && subcategories.length === 0" class="loading">
+    <div class="spinner"></div>
+    <p>Chargement des sous-catégories...</p>
+  </div>
 
-      <div class="form-group">
-        <label for="subcategoryName">Nom de la sous-catégorie</label>
-        <input
-          type="text"
-          id="subcategoryName"
-          [(ngModel)]="subcategoryName"
-          name="subcategoryName"
-          placeholder="Entrez le nom"
-          class="form-input"
-        />
-      </div>
+  <!-- Tableau des sous-catégories -->
+  <div *ngIf="subcategories.length > 0" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Catégorie Parente</th>
+          <th>Description</th>
+          <th style="width: 120px;" class="actions-column">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let subcategory of subcategories" [class.editing]="subcategory.isEditing">
 
-      <button type="submit" class="btn-add">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0C8.41421 0 8.75 0.335786 8.75 0.75V7.25H15.25C15.6642 7.25 16 7.58579 16 8C16 8.41421 15.6642 8.75 15.25 8.75H8.75V15.25C8.75 15.6642 8.41421 16 8 16C7.58579 16 7.25 15.6642 7.25 15.25V8.75H0.75C0.335786 8.75 0 8.41421 0 8C0 7.58579 0.335786 7.25 0.75 7.25H7.25V0.75C7.25 0.335786 7.58579 0 8 0Z"/>
-        </svg>
-        Ajouter
-      </button>
-    </form>
+          <!-- Mode Lecture -->
+          <ng-container *ngIf="!subcategory.isEditing">
+            <td><strong>{{ subcategory.nom }}</strong></td>
+            <td>
+              <span class="category-badge">
+                {{ subcategory.categorie?.titre || subcategory.categorie?.nom || getCategoryName(subcategory.categorieId) }}
+              </span>
+            </td>
+            <td>{{ subcategory.description || '—' }}</td>
+            <td class="actions-column">
+              <button
+                class="btn-edit"
+                (click)="startEdit(subcategory)"
+                [disabled]="hasActiveEdit()"
+                title="Modifier"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                </svg>
+              </button>
+              <button
+                class="btn-delete"
+                (click)="deleteSubcategory(subcategory)"
+                [disabled]="hasActiveEdit()"
+                title="Supprimer"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                  <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                </svg>
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- Mode Édition -->
+          <ng-container *ngIf="subcategory.isEditing">
+            <td>
+              <input
+                type="text"
+                [(ngModel)]="subcategory.nom"
+                class="input-edit"
+                placeholder="Nom"
+              />
+            </td>
+            <td>
+              <select
+                [(ngModel)]="subcategory.categorieId"
+                class="select-edit"
+              >
+                <option [value]="null" disabled>Choisir une catégorie</option>
+                <option *ngFor="let cat of categories" [value]="cat.id">
+                  {{ cat.titre || cat.nom }}
+                </option>
+              </select>
+            </td>
+            <td>
+              <input
+                type="text"
+                [(ngModel)]="subcategory.description"
+                class="input-edit"
+                placeholder="Description"
+              />
+            </td>
+           
+            <td class="actions-column">
+              <button
+                class="btn-save"
+                (click)="saveSubcategory(subcategory)"
+                title="Enregistrer"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                </svg>
+              </button>
+              <button
+                class="btn-cancel"
+                (click)="cancelEdit(subcategory)"
+                title="Annuler"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+              </button>
+            </td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Aucune donnée -->
+  <div *ngIf="!isLoading && subcategories.length === 0" class="no-data">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+    <p>Aucune sous-catégorie trouvée</p>
+    <button class="btn-primary" (click)="addSubcategory()">
+      Ajouter la première sous-catégorie
+    </button>
   </div>
 </div>
-
-
-
 

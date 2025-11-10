@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule, NavigationEnd, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
+import { DialogService, DialogData, DialogResult } from '../../services/dialog.service';
+import { ConfirmDialogComponent } from './confirm-dialog.component';
 
 /**
  * Composant de layout principal de l'application
@@ -18,17 +20,26 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule, CommonModule, ConfirmDialogComponent],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css'
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit {
+  dialogData: DialogData | null = null;
+  private dialogResolver: ((result: DialogResult) => void) | null = null;
+  showConfirmDialog = false;
+
   /**
    * Constructeur du composant Layout
    * @param router - Router Angular pour la navigation et le suivi des événements
    * @param authService - Service d'authentification pour la déconnexion
+   * @param dialogService - Service de gestion des boîtes de dialogue
    */
-  constructor(private router: Router, private authService: AuthService) {
+  constructor(
+    private router: Router, 
+    private authService: AuthService,
+    private dialogService: DialogService
+  ) {
     // Surveille les changements de route pour mettre à jour la page active
     // Cela permet de mettre en surbrillance l'élément de menu actif
     this.router.events.pipe(
@@ -46,6 +57,15 @@ export class LayoutComponent {
     });
   }
 
+  ngOnInit() {
+    // Subscribe to dialog requests
+    this.dialogService.dialogRequest$.subscribe(({ data, resolver }) => {
+      this.dialogData = data;
+      this.dialogResolver = resolver;
+      this.showConfirmDialog = true;
+    });
+  }
+
   // Page active dans la sidebar (pour la mise en surbrillance CSS)
   activePage = 'users';
 
@@ -56,5 +76,28 @@ export class LayoutComponent {
   logout() {
     this.authService.logout();
   }
-}
 
+  /**
+   * Gère la confirmation du dialogue
+   */
+  onConfirm() {
+    if (this.dialogResolver) {
+      this.dialogResolver({ confirmed: true });
+      this.showConfirmDialog = false;
+      this.dialogData = null;
+      this.dialogResolver = null;
+    }
+  }
+
+  /**
+   * Gère l'annulation du dialogue
+   */
+  onCancel() {
+    if (this.dialogResolver) {
+      this.dialogResolver({ confirmed: false });
+      this.showConfirmDialog = false;
+      this.dialogData = null;
+      this.dialogResolver = null;
+    }
+  }
+}
