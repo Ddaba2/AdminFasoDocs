@@ -1,429 +1,392 @@
- <div class="add-procedure-page">
-      <div class="header">
-        <h1 class="page-title">Ajouter une nouvelle procédure</h1>
-        <p class="page-description">Remplissez les détails ci-dessous pour ajouter une procédure au système.</p>
+<div class="add-procedure-page">
+  <div class="header">
+    <h1 class="page-title">Ajouter une nouvelle procédure</h1>
+    <p class="page-description">Remplissez tous les détails pour créer une procédure complète.</p>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+    </svg>
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+    </svg>
+    {{ errorMessage }}
+  </div>
+
+  <form (ngSubmit)="saveProcedure()">
+    <!-- SECTION 1: Informations de base -->
+    <div class="form-section">
+      <h2 class="section-title">📋 Informations de base</h2>
+
+      <div class="form-group">
+        <label for="nom">Nom * (max 200 caractères)</label>
+        <input type="text" id="nom" [(ngModel)]="nom" name="nom" 
+               placeholder="Ex: Obtenir une carte d'identité nationale (NINA)"
+               class="form-input" required maxlength="200" />
       </div>
 
-      <div *ngIf="successMessage" class="alert alert-success">
-        {{ successMessage }}
+      <div class="form-group">
+        <label for="titre">Titre * (max 100 caractères)</label>
+        <input type="text" id="titre" [(ngModel)]="titre" name="titre" 
+               placeholder="Ex: Carte d'identité nationale biométrique"
+               class="form-input" required maxlength="100" />
       </div>
 
-      <div *ngIf="errorMessage" class="alert alert-error">
-        {{ errorMessage }}
+      <div class="form-group">
+        <label for="delai">Délai * (max 500 caractères)</label>
+        <input type="text" id="delai" [(ngModel)]="delai" name="delai"
+               placeholder="Ex: 2 semaines" class="form-input" required maxlength="500" />
       </div>
 
-      <form (ngSubmit)="saveProcedure()">
-        <!-- Informations de base (obligatoires) -->
-        <div class="form-section">
-          <div class="section-header">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              <path d="M10 7V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <circle cx="10" cy="14" r="0.75" fill="currentColor"/>
-            </svg>
-            <h2 class="section-title">Informations de base (obligatoires)</h2>
-          </div>
+      <div class="form-group">
+        <label for="description">Description (optionnel)</label>
+        <textarea id="description" [(ngModel)]="description" name="description"
+                  placeholder="Description détaillée de la procédure"
+                  class="form-textarea" rows="4"></textarea>
+      </div>
 
-          <div class="form-group">
-            <label for="nom">Nom *</label>
-            <input
-              type="text"
-              id="nom"
-              [(ngModel)]="nom"
-              name="nom"
-              placeholder="Nom technique de la procédure"
-              class="form-input"
-              required
-            />
-            <small class="form-text">Nom technique de la procédure</small>
-          </div>
+      <div class="form-group">
+        <label for="urlVersFormulaire">URL vers formulaire (optionnel, max 500 caractères)</label>
+        <input type="url" id="urlVersFormulaire" [(ngModel)]="urlVersFormulaire" name="urlVersFormulaire" 
+               placeholder="Ex: https://nina.gouv.ml/formulaire"
+               class="form-input" maxlength="500" />
+      </div>
 
-          <div class="form-group">
-            <label for="titre">Titre *</label>
-            <input
-              type="text"
-              id="titre"
-              [(ngModel)]="titre"
-              name="titre"
-              placeholder="Titre affiché de la procédure"
-              class="form-input"
-              required
-            />
-            <small class="form-text">Titre affiché de la procédure</small>
-          </div>
-
-          <div class="form-group">
-            <label for="delai">Délai *</label>
-            <input
-              type="text"
-              id="delai"
-              [(ngModel)]="delai"
-              name="delai"
-              placeholder="Délai de traitement de la procédure (texte descriptif)"
-              class="form-input"
-              required
-            />
-            <small class="form-text">Délai de traitement de la procédure (texte descriptif)</small>
-          </div>
-
-          <div class="form-group">
-            <label for="categorieId">Catégorie *</label>
-            <select
-              id="categorieId"
-              [(ngModel)]="categorieId"
-              name="categorieId"
-              class="form-input"
-              required
-              (change)="onCategorieChange()"
-              [disabled]="isCategoriesLoading"
-            >
-              <option value="">Sélectionnez une catégorie</option>
-              <option *ngFor="let category of categories" [value]="category.id">
-                {{ category.titre }} ({{ category.nomCategorie }})
-              </option>
-            </select>
-            <small class="form-text">Catégorie à laquelle appartient la procédure</small>
-            <div *ngIf="isCategoriesLoading" class="loading-text">Chargement des catégories...</div>
-          </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="categorieId">Catégorie *</label>
+          <select id="categorieId" [(ngModel)]="categorieId" name="categorieId"
+                  class="form-input" required [disabled]="isCategoriesLoading">
+            <option [value]="null">Sélectionnez une catégorie</option>
+            <option *ngFor="let category of categories" [value]="category.id">
+              {{ category.titre }}
+            </option>
+          </select>
         </div>
 
-        <!-- Informations complémentaires (optionnelles) -->
-        <div class="form-section">
-          <div class="section-header">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M4 4L8 7L4 10V4Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              <path d="M6 17H16C16.5523 17 17 16.5523 17 16V4C17 3.44772 16.5523 3 16 3H6" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            </svg>
-            <h2 class="section-title">Informations complémentaires (optionnelles)</h2>
-          </div>
+        <div class="form-group">
+          <label for="sousCategorieId">Sous-catégorie</label>
+          <select id="sousCategorieId" [(ngModel)]="sousCategorieId" name="sousCategorieId"
+                  class="form-input" [disabled]="isSousCategoriesLoading">
+            <option [value]="null">Aucune</option>
+            <option *ngFor="let subcat of sousCategories" [value]="subcat.id">
+              {{ subcat.titre }}
+            </option>
+          </select>
+        </div>
+      </div>
 
-          <div class="form-group">
-            <label for="description">Description</label>
-            <textarea
-              id="description"
-              [(ngModel)]="description"
-              name="description"
-              placeholder="Description détaillée de la procédure"
-              class="form-textarea"
-              rows="4"
-            ></textarea>
-            <small class="form-text">Description détaillée de la procédure</small>
-          </div>
-
-          <div class="form-group">
-            <label for="urlVersFormulaire">URL vers formulaire</label>
-            <input
-              type="text"
-              id="urlVersFormulaire"
-              [(ngModel)]="urlVersFormulaire"
-              name="urlVersFormulaire"
-              placeholder="URL vers un formulaire en ligne si disponible"
-              class="form-input"
-            />
-            <small class="form-text">URL vers un formulaire en ligne si disponible</small>
-          </div>
-
-          <div class="form-group">
-            <label for="sousCategorieId">Sous-catégorie (optionnelle)</label>
-            <select
-              id="sousCategorieId"
-              [(ngModel)]="sousCategorieId"
-              name="sousCategorieId"
-              class="form-input"
-              (change)="onSousCategorieChange()"
-              [disabled]="isSousCategoriesLoading"
-            >
-              <option [value]="null">Aucune sous-catégorie</option>
-              <option *ngFor="let subcategory of sousCategories" [value]="subcategory.id">
-                {{ subcategory.nom || subcategory.titre || 'Sans nom' }}
-              </option>
-            </select>
-            <small class="form-text">Sous-catégorie (si applicable)</small>
-            <div *ngIf="isSousCategoriesLoading" class="loading-text">Chargement des sous-catégories...</div>
-          </div>
-
-          <div class="form-group">
-            <label for="centreId">Centre de traitement (optionnel)</label>
-            <select
-              id="centreId"
-              [(ngModel)]="centreId"
-              name="centreId"
-              class="form-input"
-              [disabled]="isCentresLoading"
-            >
-              <option [value]="null">Aucun centre spécifique</option>
-              <option *ngFor="let centre of centres" [value]="centre.id">
-                {{ centre.nom }} - {{ centre.adresse }}
-              </option>
-            </select>
-            <small class="form-text">Centre où la procédure est traitée</small>
-            <div *ngIf="isCentresLoading" class="loading-text">Chargement des centres...</div>
-          </div>
-
-          <div class="form-group">
-            <label for="coutId">Coût (optionnel)</label>
-            <select
-              id="coutId"
-              [(ngModel)]="coutId"
-              name="coutId"
-              class="form-input"
-              [disabled]="isCoutsLoading"
-            >
-              <option [value]="null">Aucun coût spécifique</option>
-              <option *ngFor="let cout of couts" [value]="cout.id">
-                {{ cout.nom }} - {{ cout.prix }} FCFA
-              </option>
-            </select>
-            <small class="form-text">Coût associé à la procédure</small>
-            <div *ngIf="isCoutsLoading" class="loading-text">Chargement des coûts...</div>
-          </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cout">Coût (FCFA) - Optionnel</label>
+          <input type="number" id="cout" [(ngModel)]="cout" name="cout"
+                 placeholder="Ex: 2000" class="form-input" min="0" />
         </div>
 
-        <!-- Étapes -->
-        <div class="form-section">
-          <div class="section-header">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M6 4L10 8L14 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
-              <rect x="3" y="6" width="14" height="12" rx="1" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              <path d="M6 10H14" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M6 13H12" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-            <h2 class="section-title">Étapes</h2>
-          </div>
-
-          <!-- Formulaire d'ajout d'étape -->
-          <div class="form-group">
-            <label for="stepNom">Nom de l'étape</label>
-            <input
-              type="text"
-              id="stepNom"
-              [(ngModel)]="stepNom"
-              name="stepNom"
-              placeholder="Nom de l'étape"
-              class="form-input"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="stepDescription">Description de l'étape</label>
-            <textarea
-              id="stepDescription"
-              [(ngModel)]="stepDescription"
-              name="stepDescription"
-              placeholder="Description de l'étape"
-              class="form-textarea"
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="stepOrdre">Ordre</label>
-            <input
-              type="number"
-              id="stepOrdre"
-              [(ngModel)]="stepOrdre"
-              name="stepOrdre"
-              placeholder="Niveau d'ordre"
-              class="form-input"
-            />
-          </div>
-
-          <button type="button" class="btn-add-section" (click)="addStep()">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C8.41421 0 8.75 0.335786 8.75 0.75V7.25H15.25C15.6642 7.25 16 7.58579 16 8C16 8.41421 15.6642 8.75 15.25 8.75H8.75V15.25C8.75 15.6642 8.41421 16 8 16C7.58579 16 7.25 15.6642 7.25 15.25V8.75H0.75C0.335786 8.75 0 8.41421 0 8C0 7.58579 0.335786 7.25 0.75 7.25H7.25V0.75C7.25 0.335786 7.58579 0 8 0Z"/>
-            </svg>
-            Ajouter une étape
-          </button>
-
-          <!-- Liste des étapes ajoutées -->
-          <div class="added-items">
-            <div *ngFor="let step of etapes; let i = index" class="added-item">
-              <div class="item-content">
-                <strong>{{ step.nom }}</strong>
-                <p>{{ step.description }}</p>
-                <span>Ordre: {{ step.ordre }}</span>
-              </div>
-              <button type="button" class="btn-remove" (click)="removeStep(i)">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M5 7.5L8 10.5L11 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-            </div>
-          </div>
+        <div class="form-group">
+          <label for="coutId">ID Coût - Optionnel</label>
+          <input type="number" id="coutId" [(ngModel)]="coutId" name="coutId"
+                 placeholder="ID du coût associé" class="form-input" min="1" />
         </div>
 
-        <!-- Documents requis -->
-        <div class="form-section">
-          <div class="section-header">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M4 2C3.44772 2 3 2.44772 3 3V17C3 17.5523 3.44772 18 4 18H16C16.5523 18 17 17.5523 17 17V6L12 1H4Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              <path d="M12 1V6H17" stroke="currentColor" stroke-width="1.5"/>
-              <rect x="5" y="9" width="10" height="1.5" rx="0.75"/>
-              <rect x="5" y="12" width="10" height="1.5" rx="0.75"/>
-            </svg>
-            <h2 class="section-title">Documents requis</h2>
-          </div>
-
-          <!-- Formulaire d'ajout de document -->
-          <div class="form-group">
-            <label for="documentNom">Nom du document</label>
-            <input
-              type="text"
-              id="documentNom"
-              [(ngModel)]="documentNom"
-              name="documentNom"
-              placeholder="Nom du document"
-              class="form-input"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="documentDescription">Description du document</label>
-            <textarea
-              id="documentDescription"
-              [(ngModel)]="documentDescription"
-              name="documentDescription"
-              placeholder="Description du document"
-              class="form-textarea"
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                [(ngModel)]="documentObligatoire"
-                name="documentObligatoire"
-                class="checkbox-input"
-              />
-              <span>Obligatoire</span>
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label for="documentModeleUrl">URL du modèle</label>
-            <input
-              type="text"
-              id="documentModeleUrl"
-              [(ngModel)]="documentModeleUrl"
-              name="documentModeleUrl"
-              placeholder="URL vers le modèle du document"
-              class="form-input"
-            />
-          </div>
-
-          <button type="button" class="btn-add-section" (click)="addDocument()">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C8.41421 0 8.75 0.335786 8.75 0.75V7.25H15.25C15.6642 7.25 16 7.58579 16 8C16 8.41421 15.6642 8.75 15.25 8.75H8.75V15.25C8.75 15.6642 8.41421 16 8 16C7.58579 16 7.25 15.6642 7.25 15.25V8.75H0.75C0.335786 8.75 0 8.41421 0 8C0 7.58579 0.335786 7.25 0.75 7.25H7.25V0.75C7.25 0.335786 7.58579 0 8 0Z"/>
-            </svg>
-            Ajouter un document
-          </button>
-
-          <!-- Liste des documents ajoutés -->
-          <div class="added-items">
-            <div *ngFor="let document of documentsRequis; let i = index" class="added-item">
-              <div class="item-content">
-                <strong>{{ document.nom }}</strong>
-                <p>{{ document.description }}</p>
-                <span>Obligatoire: {{ document.obligatoire ? 'Oui' : 'Non' }}</span>
-                <span *ngIf="document.modeleUrl">Modèle: {{ document.modeleUrl }}</span>
-              </div>
-              <button type="button" class="btn-remove" (click)="removeDocument(i)">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M5 7.5L8 10.5L11 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-            </div>
-          </div>
+        <div class="form-group">
+          <label for="centreId">ID Centre - Optionnel</label>
+          <input type="number" id="centreId" [(ngModel)]="centreId" name="centreId"
+                 placeholder="ID du centre" class="form-input" min="1" />
         </div>
-
-        <!-- Références légales -->
-        <div class="form-section">
-          <div class="section-header">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M4 4L8 7L4 10V4Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              <path d="M6 17H16C16.5523 17 17 16.5523 17 16V4C17 3.44772 16.5523 3 16 3H6" stroke="currentColor" stroke-width="1.5" fill="none"/>
-            </svg>
-            <h2 class="section-title">Références légales</h2>
-          </div>
-
-          <!-- Formulaire d'ajout de référence -->
-          <div class="form-group">
-            <label for="referenceDescription">Description</label>
-            <textarea
-              id="referenceDescription"
-              [(ngModel)]="referenceDescription"
-              name="referenceDescription"
-              placeholder="Description de la référence légale"
-              class="form-textarea"
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="referenceTexte">Texte de référence</label>
-            <textarea
-              id="referenceTexte"
-              [(ngModel)]="referenceTexte"
-              name="referenceTexte"
-              placeholder="Texte de référence"
-              class="form-textarea"
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="referenceLienAudio">Lien audio</label>
-            <input
-              type="text"
-              id="referenceLienAudio"
-              [(ngModel)]="referenceLienAudio"
-              name="referenceLienAudio"
-              placeholder="Lien vers l'audio"
-              class="form-input"
-            />
-          </div>
-
-          <button type="button" class="btn-add-section" (click)="addReference()">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 0C8.41421 0 8.75 0.335786 8.75 0.75V7.25H15.25C15.6642 7.25 16 7.58579 16 8C16 8.41421 15.6642 8.75 15.25 8.75H8.75V15.25C8.75 15.6642 8.41421 16 8 16C7.58579 16 7.25 15.6642 7.25 15.25V8.75H0.75C0.335786 8.75 0 8.41421 0 8C0 7.58579 0.335786 7.25 0.75 7.25H7.25V0.75C7.25 0.335786 7.58579 0 8 0Z"/>
-            </svg>
-            Ajouter une référence
-          </button>
-
-          <!-- Liste des références ajoutées -->
-          <div class="added-items">
-            <div *ngFor="let reference of referencesLegales; let i = index" class="added-item">
-              <div class="item-content">
-                <strong>{{ reference.description }}</strong>
-                <p>{{ reference.texteReference }}</p>
-                <span *ngIf="reference.lienAudio">Audio: {{ reference.lienAudio }}</span>
-              </div>
-              <button type="button" class="btn-remove" (click)="removeReference(i)">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <path d="M5 7.5L8 10.5L11 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Save Button -->
-        <div class="form-actions">
-          <button type="submit" class="btn-save" [disabled]="isLoading">
-            <span *ngIf="isLoading" class="spinner"></span>
-            <svg *ngIf="!isLoading" width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M16 2H4C2.89543 2 2 2.89543 2 4V16C2 17.1046 2.89543 18 4 18H16C17.1046 18 18 17.1046 18 16V5L16 2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              <path d="M16 2V5H18" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M5 9L8 12L15 5" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-            <span *ngIf="!isLoading">Sauvegarder</span>
-            <span *ngIf="isLoading">Enregistrement...</span>
-          </button>
-          <button type="button" class="btn-cancel" (click)="cancel()" [disabled]="isLoading">
-            Annuler
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
+
+    <!-- SECTION 2: Prérequis -->
+    <div class="form-section">
+      <h2 class="section-title">✓ Prérequis</h2>
+      
+      <div class="add-item-group">
+        <input type="text" [(ngModel)]="newPrerequis" name="newPrerequis"
+               placeholder="Ex: Être de nationalité malienne"
+               class="form-input" />
+        <button type="button" class="btn-add-item" (click)="addPrerequis()">
+          Ajouter
+        </button>
+      </div>
+
+      <div class="item-list">
+        <div *ngFor="let item of prerequis; let i = index" class="list-item">
+          <span>{{ item }}</span>
+          <button type="button" class="btn-remove-small" (click)="removePrerequis(i)">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: Étapes -->
+    <div class="form-section">
+      <h2 class="section-title">📍 Étapes de la procédure</h2>
+
+      <div class="form-row">
+        <div class="form-group" style="flex: 0 0 100px;">
+          <label for="stepNumero">N°</label>
+          <input type="number" id="stepNumero" [(ngModel)]="stepNumero" name="stepNumero"
+                 placeholder="1" class="form-input" min="1" />
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label for="stepTitre">Titre de l'étape</label>
+          <input type="text" id="stepTitre" [(ngModel)]="stepTitre" name="stepTitre"
+                 placeholder="Ex: Se rendre au centre d'enrôlement" class="form-input" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="stepDescription">Description</label>
+        <textarea id="stepDescription" [(ngModel)]="stepDescription" name="stepDescription"
+                  placeholder="Description détaillée de l'étape"
+                  class="form-textarea" rows="2"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="stepDuree">Durée</label>
+          <input type="text" id="stepDuree" [(ngModel)]="stepDuree" name="stepDuree"
+                 placeholder="Ex: 1 jour" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="stepCout">Coût (FCFA)</label>
+          <input type="number" id="stepCout" [(ngModel)]="stepCout" name="stepCout"
+                 placeholder="0" class="form-input" min="0" />
+        </div>
+      </div>
+
+      <button type="button" class="btn-add-section" (click)="addStep()">
+        + Ajouter cette étape
+      </button>
+
+      <div class="items-grid">
+        <div *ngFor="let step of etapes; let i = index" class="grid-item">
+          <div class="item-badge">Étape {{ step.numero }}</div>
+          <strong>{{ step.titre }}</strong>
+          <p>{{ step.description }}</p>
+          <small>Durée: {{ step.duree || '—' }} | Coût: {{ step.cout }} FCFA</small>
+          <button type="button" class="btn-remove-grid" (click)="removeStep(i)">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: Documents requis -->
+    <div class="form-section">
+      <h2 class="section-title">📄 Documents requis</h2>
+
+      <div class="form-group">
+        <label for="documentNom">Nom du document</label>
+        <input type="text" id="documentNom" [(ngModel)]="documentNom" name="documentNom"
+               placeholder="Ex: Extrait d'acte de naissance" class="form-input" />
+      </div>
+
+      <div class="form-group">
+        <label for="documentDescription">Description</label>
+        <input type="text" id="documentDescription" [(ngModel)]="documentDescription" name="documentDescription"
+               placeholder="Ex: Original + photocopie" class="form-input" />
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="documentObligatoire" name="documentObligatoire" />
+          <span>Obligatoire</span>
+        </label>
+      </div>
+
+      <button type="button" class="btn-add-section" (click)="addDocument()">
+        + Ajouter ce document
+      </button>
+
+      <div class="items-grid">
+        <div *ngFor="let doc of documentsRequis; let i = index" class="grid-item">
+          <div class="item-badge" [class.required]="doc.obligatoire">
+            {{ doc.obligatoire ? 'Obligatoire' : 'Optionnel' }}
+          </div>
+          <strong>{{ doc.nom }}</strong>
+          <p>{{ doc.description }}</p>
+          <button type="button" class="btn-remove-grid" (click)="removeDocument(i)">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: Centres -->
+    <div class="form-section">
+      <h2 class="section-title">📍 Centres de traitement</h2>
+
+      <div class="form-group">
+        <label for="centreNom">Nom du centre</label>
+        <input type="text" id="centreNom" [(ngModel)]="centreNom" name="centreNom"
+               placeholder="Ex: Centre d'enrôlement Commune III" class="form-input" />
+      </div>
+
+      <div class="form-group">
+        <label for="centreAdresse">Adresse</label>
+        <input type="text" id="centreAdresse" [(ngModel)]="centreAdresse" name="centreAdresse"
+               placeholder="Ex: Avenue Moussa Travélé, Bamako" class="form-input" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="centreTelephone">Téléphone</label>
+          <input type="tel" id="centreTelephone" [(ngModel)]="centreTelephone" name="centreTelephone"
+                 placeholder="+22320123456" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label for="centreEmail">Email</label>
+          <input type="email" id="centreEmail" [(ngModel)]="centreEmail" name="centreEmail"
+                 placeholder="centre@example.ml" class="form-input" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="centreHoraires">Horaires</label>
+        <input type="text" id="centreHoraires" [(ngModel)]="centreHoraires" name="centreHoraires"
+               placeholder="Ex: Lundi-Vendredi: 8h-16h" class="form-input" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="centreLatitude">Latitude</label>
+          <input type="number" id="centreLatitude" [(ngModel)]="centreLatitude" name="centreLatitude"
+                 placeholder="12.6392" class="form-input" step="0.0001" />
+        </div>
+        <div class="form-group">
+          <label for="centreLongitude">Longitude</label>
+          <input type="number" id="centreLongitude" [(ngModel)]="centreLongitude" name="centreLongitude"
+                 placeholder="-8.0029" class="form-input" step="0.0001" />
+        </div>
+      </div>
+
+      <button type="button" class="btn-add-section" (click)="addCentre()">
+        + Ajouter ce centre
+      </button>
+
+      <div class="items-grid">
+        <div *ngFor="let centre of centres; let i = index" class="grid-item">
+          <strong>{{ centre.nom }}</strong>
+          <p>📍 {{ centre.adresse }}</p>
+          <small>📞 {{ centre.telephone }} | 📧 {{ centre.email }}</small>
+          <small>🕐 {{ centre.horaires }}</small>
+          <button type="button" class="btn-remove-grid" (click)="removeCentre(i)">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 6: Lois et Articles -->
+    <div class="form-section">
+      <h2 class="section-title">⚖️ Lois et Articles</h2>
+
+      <div class="form-group">
+        <label for="loiTitre">Titre de la loi</label>
+        <input type="text" id="loiTitre" [(ngModel)]="loiTitre" name="loiTitre"
+               placeholder="Ex: Loi N°2013-031" class="form-input" />
+      </div>
+
+      <div class="form-group">
+        <label for="loiContenu">Contenu</label>
+        <textarea id="loiContenu" [(ngModel)]="loiContenu" name="loiContenu"
+                  placeholder="Loi relative à la carte d'identité biométrique NINA"
+                  class="form-textarea" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="loiUrl">URL</label>
+        <input type="url" id="loiUrl" [(ngModel)]="loiUrl" name="loiUrl"
+               placeholder="https://www.legimali.ml/loi-2013-031" class="form-input" />
+      </div>
+
+      <button type="button" class="btn-add-section" (click)="addLoi()">
+        + Ajouter cette loi
+      </button>
+
+      <div class="items-grid">
+        <div *ngFor="let loi of loisArticles; let i = index" class="grid-item">
+          <strong>{{ loi.titre }}</strong>
+          <p>{{ loi.contenu }}</p>
+          <small *ngIf="loi.url">🔗 {{ loi.url }}</small>
+          <button type="button" class="btn-remove-grid" (click)="removeLoi(i)">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 7: Conseils -->
+    <div class="form-section">
+      <h2 class="section-title">💡 Conseils pratiques</h2>
+      
+      <div class="add-item-group">
+        <input type="text" [(ngModel)]="newConseil" name="newConseil"
+               placeholder="Ex: Arriver tôt le matin pour éviter la queue"
+               class="form-input" />
+        <button type="button" class="btn-add-item" (click)="addConseil()">
+          Ajouter
+        </button>
+      </div>
+
+      <div class="item-list">
+        <div *ngFor="let item of conseils; let i = index" class="list-item">
+          <span>{{ item }}</span>
+          <button type="button" class="btn-remove-small" (click)="removeConseil(i)">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 8: Pièces justificatives -->
+    <div class="form-section">
+      <h2 class="section-title">📎 Pièces justificatives</h2>
+      
+      <div class="add-item-group">
+        <input type="text" [(ngModel)]="newPieceJustificative" name="newPieceJustificative"
+               placeholder="Ex: Extrait d'acte de naissance original"
+               class="form-input" />
+        <button type="button" class="btn-add-item" (click)="addPieceJustificative()">
+          Ajouter
+        </button>
+      </div>
+
+      <div class="item-list">
+        <div *ngFor="let item of piecesJustificatives; let i = index" class="list-item">
+          <span>{{ item }}</span>
+          <button type="button" class="btn-remove-small" (click)="removePieceJustificative(i)">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 9: URL de références -->
+    <div class="form-section">
+      <h2 class="section-title">🔗 URL de références</h2>
+      
+      <div class="add-item-group">
+        <input type="url" [(ngModel)]="newUrlReference" name="newUrlReference"
+               placeholder="https://www.example.ml"
+               class="form-input" />
+        <button type="button" class="btn-add-item" (click)="addUrlReference()">
+          Ajouter
+        </button>
+      </div>
+
+      <div class="item-list">
+        <div *ngFor="let item of urlReferences; let i = index" class="list-item">
+          <span>{{ item }}</span>
+          <button type="button" class="btn-remove-small" (click)="removeUrlReference(i)">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button type="submit" class="btn-save" [disabled]="isLoading">
+        <span *ngIf="isLoading" class="spinner"></span>
+        {{ isLoading ? 'Enregistrement...' : 'Sauvegarder la procédure' }}
+      </button>
+      <button type="button" class="btn-cancel" (click)="cancel()" [disabled]="isLoading">
+        Annuler
+      </button>
+    </div>
+  </form>
+</div>

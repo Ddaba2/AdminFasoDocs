@@ -27,11 +27,11 @@ export class CodeVerificationComponent {
 
   constructor(private router: Router, private apiService: ApiService) {
     console.log('CodeVerificationComponent constructor called');
-    
+
     // Get phone number from storage
     this.getPhoneFromStorage();
     console.log('Phone number from storage:', this.phone);
-    
+
     // If no phone number, redirect to phone input
     if (!this.phone) {
       console.log('No phone number found, redirecting to phone input');
@@ -43,7 +43,7 @@ export class CodeVerificationComponent {
     } else {
       console.log('Phone number found, staying on SMS code page');
     }
-    
+
     // Start countdown for resend
     this.startCountdown();
   }
@@ -85,51 +85,42 @@ export class CodeVerificationComponent {
 
     console.log('Validating SMS code:', this.smsCode, 'for phone:', this.phone);
     this.isLoading = true;
-    
+
     // Verify SMS code and complete authentication
     this.apiService.verifySmsCode(this.phone, this.smsCode).subscribe({
       next: (response) => {
         console.log('SMS verification successful:', response);
         console.log('Response type:', typeof response);
         console.log('Response keys:', Object.keys(response));
-        
+
         // Log the full response for debugging
         console.log('Full response for debugging:', JSON.stringify(response, null, 2));
-        
+
         // Check if we have a token
         if (response.token || response.accessToken) {
           const token = response.token || response.accessToken;
-          console.log('Token received:', token ? token.substring(0, 20) + '...' : 'null');
-          
-          // For now, we'll assume the user is an admin since we're testing with admin credentials
-          // We'll store a default admin role to allow access
-          const userRole = 'ADMIN';
-          const isAdmin = true;
-          
-          console.log('User role:', userRole, 'Is admin:', isAdmin);
+          console.log('✅ Token JWT reçu - Utilisateur authentifié et autorisé');
 
+          // Si on arrive ici, le backend a déjà vérifié que l'utilisateur est ADMIN
           // Store token and user info
           this.apiService.setToken(token);
-          
+
           try {
             // Use safe storage methods
             this.apiService.setStorageItem('isLoggedIn', 'true');
             this.apiService.setStorageItem('telephone', this.phone);
-            this.apiService.setStorageItem('userRole', userRole);
+            this.apiService.setStorageItem('userRole', 'ADMIN'); // Le backend a vérifié
             console.log('Session data stored successfully');
           } catch (e) {
             console.warn('Storage not available:', e);
-            // Even if storage is not available, we can still proceed with the authentication
-            // since the token is stored in the ApiService memory
             console.log('Proceeding with in-memory storage');
           }
-          
-          // Clean up pending data AFTER successful storage
+
+          // Clean up pending data
           try {
             this.apiService.removeStorageItem('pendingPhone');
             console.log('Pending phone cleaned up successfully');
           } catch (e) {
-            // Silently fail - not critical
             console.debug('Could not clean up pending phone:', e);
           }
 
@@ -144,12 +135,14 @@ export class CodeVerificationComponent {
               this.errorMessage = 'Impossible de naviguer vers le panneau d\'administration.';
             });
           }, 1000);
+
+          this.isLoading = false;
         } else {
           console.error('No token received in response');
           console.error('Full response:', JSON.stringify(response, null, 2));
           this.errorMessage = 'Réponse du serveur invalide : aucun token reçu.';
+          this.isLoading = false;
         }
-        this.isLoading = false;
       },
       error: (error) => {
         console.error('SMS verification error:', error);
@@ -158,19 +151,20 @@ export class CodeVerificationComponent {
         if (error.error) {
           console.error('Error body:', error.error);
         }
-        
+
         if (error.status === 0) {
           this.errorMessage = 'Impossible de contacter le serveur.';
         } else if (error.status === 400) {
           this.errorMessage = error.error?.message || 'Code de vérification invalide.';
         } else if (error.status === 401 || error.status === 403) {
-          this.errorMessage = error.error?.message || 'Code de vérification incorrect.';
+          // Le backend vérifie le rôle ADMIN et retourne 403 si non autorisé
+          this.errorMessage = error.error?.message || 'Non autorisé. Accès réservé aux administrateurs.';
         } else if (error.status === 500) {
           this.errorMessage = 'Erreur interne du serveur. Veuillez réessayer plus tard.';
         } else {
           this.errorMessage = error.error?.message || 'Une erreur est survenue lors de la vérification. Code erreur: ' + error.status;
         }
-        
+
         this.isLoading = false;
       }
     });
@@ -205,7 +199,7 @@ export class CodeVerificationComponent {
         if (error.error) {
           console.error('Error body:', error.error);
         }
-        
+
         if (error.status === 0) {
           this.errorMessage = 'Impossible de contacter le serveur.';
         } else if (error.status === 500) {
@@ -213,7 +207,7 @@ export class CodeVerificationComponent {
         } else {
           this.errorMessage = error.error?.message || 'Une erreur est survenue lors du renvoi du code. Code erreur: ' + error.status;
         }
-        
+
         this.isLoading = false;
       }
     });

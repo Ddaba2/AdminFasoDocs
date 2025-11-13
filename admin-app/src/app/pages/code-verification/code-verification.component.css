@@ -99,11 +99,11 @@ label {
 }
 
 .btn-login:hover:not(:disabled) {
-  background-color: #3182ce;
+  background-color: #25B73D;
 }
 
 .btn-login:disabled {
-  background-color: #a0aec0;
+  background-color: #25B73D;
   cursor: not-allowed;
 }
 
@@ -182,7 +182,7 @@ label {
   .login-card {
     padding: 1.5rem;
   }
-  
+
   .app-title {
     font-size: 1.25rem;
   }

@@ -42,7 +42,6 @@
           <th>Titre</th>
           <th>Nom Catégorie</th>
           <th>Description</th>
-          <th style="width: 120px;">Icône URL</th>
           <th style="width: 120px;" class="actions-column">Actions</th>
         </tr>
       </thead>
@@ -54,14 +53,6 @@
             <td><strong>{{ category.titre }}</strong></td>
             <td>{{ category.nomCategorie }}</td>
             <td>{{ category.description || '—' }}</td>
-            <td>
-              <span *ngIf="category.iconeUrl" class="icon-preview">
-                <!-- Afficher l'emoji ou l'image selon le type -->
-                <span *ngIf="!category.iconeUrl.startsWith('http')" class="emoji-icon">{{ category.iconeUrl }}</span>
-                <img *ngIf="category.iconeUrl.startsWith('http')" [src]="category.iconeUrl" alt="Icône" />
-              </span>
-              <span *ngIf="!category.iconeUrl">—</span>
-            </td>
             <td class="actions-column">
               <button
                 class="btn-edit"
@@ -111,14 +102,6 @@
                 [(ngModel)]="category.description"
                 class="input-edit"
                 placeholder="Description"
-              />
-            </td>
-            <td>
-              <input
-                type="text"
-                [(ngModel)]="category.iconeUrl"
-                class="input-edit"
-                placeholder="URL"
               />
             </td>
             <td class="actions-column">

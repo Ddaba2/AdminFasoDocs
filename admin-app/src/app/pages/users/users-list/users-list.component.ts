@@ -134,13 +134,168 @@ export class UsersListComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Active un utilisateur
+   * @param userId - ID de l'utilisateur à activer
+   */
+  activateUser(userId: number) {
+    const user = this.users.find(u => u.id === userId);
+    const userName = user ? `${user.prenom} ${user.nom}` : 'cet utilisateur';
+    
+    this.dialogService.confirm({
+      title: '✅ Activation du compte',
+      message: `Voulez-vous vraiment activer le compte de ${userName} ?\n\nL'utilisateur pourra se connecter et accéder à l'application.`,
+      confirmText: 'Activer',
+      type: 'info'
+    }).subscribe((result: any) => {
+      if (result.confirmed) {
+        this.isLoading = true;
+        this.apiService.activateUser(userId).subscribe({
+          next: (response: any) => {
+            console.log('✅ User activated successfully:', response);
+            // Recharger la liste pour mettre à jour le statut
+            this.loadUsers();
+            this.successMessage = `✅ Le compte de ${userName} a été activé avec succès!`;
+            this.isLoading = false;
+            
+            // Cacher le message après 5 secondes
+            setTimeout(() => {
+              this.successMessage = '';
+            }, 5000);
+          },
+          error: (error: any) => {
+            console.error('Error activating user:', error);
+            
+            if (error.status === 500) {
+              this.error = '❌ Erreur serveur : Impossible d\'activer l\'utilisateur.';
+            } else if (error.status === 0) {
+              this.error = '❌ Backend non accessible.';
+            } else {
+              this.error = error.error?.message || `❌ Erreur lors de l'activation (Code ${error.status})`;
+            }
+            
+            this.isLoading = false;
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Désactive un utilisateur
+   * @param userId - ID de l'utilisateur à désactiver
+   */
+  deactivateUser(userId: number) {
+    const user = this.users.find(u => u.id === userId);
+    
+    if (!user) {
+      this.error = 'Utilisateur introuvable';
+      return;
+    }
+    
+    // Protection : empêcher la désactivation du dernier admin actif
+    if (this.isLastActiveAdmin(user)) {
+      this.error = '⚠️ Impossible de désactiver le dernier administrateur actif. Il doit y avoir au moins un administrateur actif dans le système.';
+      setTimeout(() => {
+        this.error = '';
+      }, 5000);
+      return;
+    }
+    
+    const userName = `${user.prenom} ${user.nom}`;
+    
+    this.dialogService.confirm({
+      title: '⚠️ Désactivation du compte',
+      message: `Voulez-vous vraiment désactiver le compte de ${userName} ?\n\n⚠️ ATTENTION : L'utilisateur ne pourra plus se connecter à l'application.`,
+      confirmText: 'Désactiver',
+      type: 'delete'
+    }).subscribe((result: any) => {
+      if (result.confirmed) {
+        this.isLoading = true;
+        this.apiService.deactivateUser(userId).subscribe({
+          next: (response: any) => {
+            console.log('✅ User deactivated successfully:', response);
+            // Recharger la liste pour mettre à jour le statut
+            this.loadUsers();
+            this.successMessage = `✅ Le compte de ${userName} a été désactivé avec succès!`;
+            this.isLoading = false;
+            
+            // Cacher le message après 5 secondes
+            setTimeout(() => {
+              this.successMessage = '';
+            }, 5000);
+          },
+          error: (error: any) => {
+            console.error('Error deactivating user:', error);
+            
+            if (error.status === 500) {
+              this.error = '❌ Erreur serveur : Impossible de désactiver l\'utilisateur.';
+            } else if (error.status === 0) {
+              this.error = '❌ Backend non accessible.';
+            } else {
+              this.error = error.error?.message || `❌ Erreur lors de la désactivation (Code ${error.status})`;
+            }
+            
+            this.isLoading = false;
+          }
+        });
+      }
+    });
+  }
+  
+  /**
+   * Vérifie si l'utilisateur est le dernier admin actif
+   * @param user - Utilisateur à vérifier
+   * @returns true si c'est le dernier admin actif
+   */
+  isLastActiveAdmin(user: any): boolean {
+    if (user.role !== 'ADMIN') {
+      return false;
+    }
+    
+    const activeAdmins = this.users.filter(u => u.role === 'ADMIN' && u.estActif);
+    return activeAdmins.length <= 1;
+  }
+  
+  /**
+   * Vérifie si l'utilisateur est le dernier admin (actif ou non)
+   * @param user - Utilisateur à vérifier
+   * @returns true si c'est le dernier admin
+   */
+  isLastAdmin(user: any): boolean {
+    if (user.role !== 'ADMIN') {
+      return false;
+    }
+    
+    const admins = this.users.filter(u => u.role === 'ADMIN');
+    return admins.length <= 1;
+  }
+
+  /**
    * Supprime un utilisateur (avec confirmation)
    * @param userId - ID de l'utilisateur à supprimer
    */
   deleteUser(userId: number) {
+    const user = this.users.find(u => u.id === userId);
+    
+    if (!user) {
+      this.error = 'Utilisateur introuvable';
+      return;
+    }
+    
+    // Protection : empêcher la suppression du dernier admin
+    if (this.isLastAdmin(user)) {
+      this.error = '🚫 Impossible de supprimer le dernier administrateur. Il doit y avoir au moins un administrateur dans le système.';
+      setTimeout(() => {
+        this.error = '';
+      }, 5000);
+      return;
+    }
+    
+    const userName = `${user.prenom} ${user.nom}`;
+    
     this.dialogService.confirm({
-      title: 'Confirmation de suppression',
-      message: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ?',
+      title: '🗑️ Suppression définitive',
+      message: `Voulez-vous vraiment supprimer ${userName} ?\n\n🚨 ATTENTION : Cette action est IRRÉVERSIBLE. Toutes les données de l'utilisateur seront définitivement supprimées.`,
       confirmText: 'Supprimer',
       type: 'delete'
     }).subscribe((result: any) => {
@@ -151,14 +306,14 @@ export class UsersListComponent implements OnInit, OnDestroy {
             console.log('✅ User deleted successfully:', response);
             // Mettre à jour le cache (synchronisation en temps réel)
             this.dataCache.removeUser(userId);
-            this.successMessage = '✅ Utilisateur supprimé avec succès!';
+            this.successMessage = `✅ ${userName} a été supprimé avec succès!`;
             this.isLoading = false;
             this.retryCount = 0; // Reset retry counter
             
-            // Cacher le message après 3 secondes
+            // Cacher le message après 5 secondes
             setTimeout(() => {
               this.successMessage = '';
-            }, 3000);
+            }, 5000);
           },
           error: (error: any) => {
             console.error('Error deleting user:', error);

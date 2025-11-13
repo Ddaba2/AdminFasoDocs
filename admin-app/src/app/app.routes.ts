@@ -83,12 +83,12 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/procedures/add-procedure/add-procedure').then(m => m.AddProcedure)
       },
       {
-        path: 'procedures/edit/:id',
-        loadComponent: () => import('./pages/procedures/edit-procedure/edit-procedure').then(m => m.EditProcedure)
-      },
-      {
         path: 'downloads',
         loadComponent: () => import('./pages/downloads/downloads.component').then(m => m.DownloadsComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent)
       }
     ]
   }

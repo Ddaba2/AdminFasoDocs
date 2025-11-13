@@ -20,61 +20,73 @@ import { Router } from '@angular/router';
   styleUrl: './add-procedure.css'
 })
 export class AddProcedure implements OnInit {
-  // Données du formulaire
-  nom = '';
-  titre = '';
-  delai = '';
+  // Données de base
+  nom = '';  // Nom de la procédure (max 200 caractères) - OBLIGATOIRE
+  titre = '';  // Titre de la procédure (max 100 caractères) - OBLIGATOIRE
   description = '';
-  urlVersFormulaire = '';
   categorieId: number | null = null;
-  categorieNom = ''; // Nom de la catégorie pour le backend
   sousCategorieId: number | null = null;
-  sousCategorieNom = ''; // Nom de la sous-catégorie pour le backend
-  centreId: number | null = null;
-  coutId: number | null = null;
+  delai = '';  // Délai d'exécution (max 500 caractères) - OBLIGATOIRE
+  urlVersFormulaire = '';  // URL vers formulaire en ligne (optionnel)
+  coutId: number | null = null;  // ID du coût associé (optionnel)
+  centreId: number | null = null;  // ID du centre de traitement (optionnel)
+  cout: number | null = null;
+  typeMonnaie = 'FCFA';
+
+  // Tableaux de données
+  prerequis: string[] = [];
+  etapes: any[] = [];
+  documentsRequis: any[] = [];
+  centres: any[] = [];
+  loisArticles: any[] = [];
+  conseils: string[] = [];
+  piecesJustificatives: string[] = [];
+  urlReferences: string[] = [];
+
+  // Champs temporaires pour l'ajout
+  newPrerequis = '';
+  newConseil = '';
+  newPieceJustificative = '';
+  newUrlReference = '';
 
   // Données pour les étapes
-  stepNom = '';
+  stepNumero: number | null = null;
+  stepTitre = '';
   stepDescription = '';
-  stepOrdre: number | null = null;
-  etapes: any[] = [];
+  stepDuree = '';
+  stepCout: number | null = null;
+  stepTypeMonnaie = 'FCFA';
 
   // Données pour les documents requis
   documentNom = '';
   documentDescription = '';
   documentObligatoire = false;
-  documentModeleUrl = '';
-  documentsRequis: any[] = [];
 
-  // Données pour les références légales
-  referenceDescription = '';
-  referenceTexte = '';
-  referenceLienAudio = '';
-  referencesLegales: any[] = [];
+  // Données pour les centres
+  centreNom = '';
+  centreAdresse = '';
+  centreTelephone = '';
+  centreEmail = '';
+  centreHoraires = '';
+  centreLatitude: number | null = null;
+  centreLongitude: number | null = null;
 
-  // Liste des catégories (pour le formulaire)
+  // Données pour les lois/articles
+  loiTitre = '';
+  loiContenu = '';
+  loiUrl = '';
+
+  // Liste des catégories et sous-catégories
   categories: any[] = [];
-  
-  // Liste des sous-catégories (pour le formulaire)
   sousCategories: any[] = [];
-  
-  // Liste des centres (pour le formulaire)
-  centres: any[] = [];
-  
-  // Liste des coûts (pour le formulaire)
-  couts: any[] = [];
 
   // Indicateur de chargement
   isLoading = false;
   isCategoriesLoading = false;
   isSousCategoriesLoading = false;
-  isCentresLoading = false;
-  isCoutsLoading = false;
 
-  // Message d'erreur
+  // Messages
   errorMessage = '';
-
-  // Message de succès
   successMessage = '';
 
   /**
@@ -94,8 +106,6 @@ export class AddProcedure implements OnInit {
   ngOnInit() {
     this.loadCategories();
     this.loadSousCategories();
-    this.loadCentres();
-    this.loadCouts();
   }
 
   /**
@@ -139,64 +149,51 @@ export class AddProcedure implements OnInit {
     });
   }
 
-  /**
-   * Charge la liste des centres depuis le backend
-   */
-  loadCentres() {
-    this.isCentresLoading = true;
-    this.apiService.getCentres().subscribe({
-      next: (response: any) => {
-        this.centres = response;
-        this.isCentresLoading = false;
-      },
-      error: (err: any) => {
-        console.error('Error loading centres:', err);
-        this.errorMessage = 'Erreur lors du chargement des centres';
-        this.isCentresLoading = false;
-      }
-    });
-  }
 
-  /**
-   * Charge la liste des coûts depuis le backend
-   */
-  loadCouts() {
-    this.isCoutsLoading = true;
-    this.apiService.getCouts().subscribe({
-      next: (response: any) => {
-        this.couts = response;
-        this.isCoutsLoading = false;
-      },
-      error: (err: any) => {
-        console.error('Error loading couts:', err);
-        this.errorMessage = 'Erreur lors du chargement des coûts';
-        this.isCoutsLoading = false;
-      }
-    });
-  }
+  // === MÉTHODES POUR AJOUTER DES ÉLÉMENTS AUX TABLEAUX ===
 
-  /**
-   * Met à jour le nom de la catégorie quand l'ID change
-   */
-  onCategorieChange() {
-    if (this.categorieId) {
-      const categorie = this.categories.find(c => c.id === Number(this.categorieId));
-      this.categorieNom = categorie ? categorie.titre : '';
-      console.log('Catégorie sélectionnée:', this.categorieNom);
+  addPrerequis() {
+    if (this.newPrerequis.trim()) {
+      this.prerequis.push(this.newPrerequis.trim());
+      this.newPrerequis = '';
     }
   }
 
-  /**
-   * Met à jour le nom de la sous-catégorie quand la sélection change
-   */
-  onSousCategorieChange() {
-    if (this.sousCategorieId) {
-      const sousCategorie = this.sousCategories.find(sc => sc.id === Number(this.sousCategorieId));
-      this.sousCategorieNom = sousCategorie ? (sousCategorie.nom || sousCategorie.titre || '') : '';
-      console.log('Sous-catégorie sélectionnée:', this.sousCategorieNom);
-    } else {
-      this.sousCategorieNom = '';
+  removePrerequis(index: number) {
+    this.prerequis.splice(index, 1);
+  }
+
+  addConseil() {
+    if (this.newConseil.trim()) {
+      this.conseils.push(this.newConseil.trim());
+      this.newConseil = '';
     }
+  }
+
+  removeConseil(index: number) {
+    this.conseils.splice(index, 1);
+  }
+
+  addPieceJustificative() {
+    if (this.newPieceJustificative.trim()) {
+      this.piecesJustificatives.push(this.newPieceJustificative.trim());
+      this.newPieceJustificative = '';
+    }
+  }
+
+  removePieceJustificative(index: number) {
+    this.piecesJustificatives.splice(index, 1);
+  }
+
+  addUrlReference() {
+    if (this.newUrlReference.trim()) {
+      this.urlReferences.push(this.newUrlReference.trim());
+      this.newUrlReference = '';
+    }
+  }
+
+  removeUrlReference(index: number) {
+    this.urlReferences.splice(index, 1);
   }
 
   /**
@@ -210,17 +207,23 @@ export class AddProcedure implements OnInit {
    * Ajoute une étape à la liste
    */
   addStep() {
-    if (this.stepNom && this.stepDescription && this.stepOrdre !== null) {
+    if (this.stepTitre && this.stepDescription && this.stepNumero !== null) {
       this.etapes.push({
-        nom: this.stepNom,
+        numero: this.stepNumero,
+        titre: this.stepTitre,
         description: this.stepDescription,
-        ordre: this.stepOrdre
+        duree: this.stepDuree || '',
+        cout: this.stepCout || 0,
+        typeMonnaie: this.stepTypeMonnaie
       });
 
-      // Réinitialiser les champs d'étape
-      this.stepNom = '';
+      // Réinitialiser les champs
+      this.stepNumero = null;
+      this.stepTitre = '';
       this.stepDescription = '';
-      this.stepOrdre = null;
+      this.stepDuree = '';
+      this.stepCout = null;
+      this.stepTypeMonnaie = 'FCFA';
     }
   }
 
@@ -240,15 +243,13 @@ export class AddProcedure implements OnInit {
       this.documentsRequis.push({
         nom: this.documentNom,
         description: this.documentDescription,
-        obligatoire: this.documentObligatoire,
-        modeleUrl: this.documentModeleUrl || null
+        obligatoire: this.documentObligatoire
       });
 
-      // Réinitialiser les champs de document
+      // Réinitialiser les champs
       this.documentNom = '';
       this.documentDescription = '';
       this.documentObligatoire = false;
-      this.documentModeleUrl = '';
     }
   }
 
@@ -260,38 +261,65 @@ export class AddProcedure implements OnInit {
     this.documentsRequis.splice(index, 1);
   }
 
+
   /**
-   * Ajoute une référence légale à la liste
+   * Ajoute un centre à la liste
    */
-  addReference() {
-    if (this.referenceDescription && this.referenceTexte) {
-      this.referencesLegales.push({
-        description: this.referenceDescription,
-        texteReference: this.referenceTexte,
-        lienAudio: this.referenceLienAudio || null
+  addCentre() {
+    if (this.centreNom && this.centreAdresse) {
+      this.centres.push({
+        nom: this.centreNom,
+        adresse: this.centreAdresse,
+        telephone: this.centreTelephone || '',
+        email: this.centreEmail || '',
+        horaires: this.centreHoraires || '',
+        latitude: this.centreLatitude || 0,
+        longitude: this.centreLongitude || 0
       });
 
-      // Réinitialiser les champs de référence
-      this.referenceDescription = '';
-      this.referenceTexte = '';
-      this.referenceLienAudio = '';
+      // Réinitialiser les champs
+      this.centreNom = '';
+      this.centreAdresse = '';
+      this.centreTelephone = '';
+      this.centreEmail = '';
+      this.centreHoraires = '';
+      this.centreLatitude = null;
+      this.centreLongitude = null;
     }
   }
 
+  removeCentre(index: number) {
+    this.centres.splice(index, 1);
+  }
+
   /**
-   * Supprime une référence légale de la liste
-   * @param index Index de la référence à supprimer
+   * Ajoute une loi/article à la liste
    */
-  removeReference(index: number) {
-    this.referencesLegales.splice(index, 1);
+  addLoi() {
+    if (this.loiTitre && this.loiContenu) {
+      this.loisArticles.push({
+        titre: this.loiTitre,
+        contenu: this.loiContenu,
+        url: this.loiUrl || ''
+      });
+
+      // Réinitialiser les champs
+      this.loiTitre = '';
+      this.loiContenu = '';
+      this.loiUrl = '';
+    }
+  }
+
+  removeLoi(index: number) {
+    this.loisArticles.splice(index, 1);
   }
 
   /**
    * Enregistre une nouvelle procédure
    */
   saveProcedure() {
-    // Validation simple du formulaire
-    if (!this.nom || !this.titre || !this.delai || !this.categorieNom) {
+    // Validation des champs obligatoires
+    if (!this.nom || !this.titre || !this.delai || !this.categorieId) {
       this.errorMessage = 'Les champs Nom, Titre, Délai et Catégorie sont obligatoires';
       return;
     }
@@ -300,53 +328,65 @@ export class AddProcedure implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    // Convertir les étapes en tableau de strings simples (format attendu par le backend)
-    const etapesSimples = this.etapes.map(e => e.description || e.nom || '');
-
-    // Préparation des données selon le format attendu par le backend
-    const procedureData = {
+    // Préparation des données selon le format complet du backend
+    const procedureData: any = {
+      // Champs obligatoires
       nom: this.nom,
       titre: this.titre,
       delai: this.delai,
+      categorieId: Number(this.categorieId),
+      
+      // Champs optionnels de base
       description: this.description || '',
-      urlVersFormulaire: this.urlVersFormulaire || '',
-      categorieNom: this.categorieNom,  // Nom de la catégorie (pas l'ID)
-      sousCategorieNom: this.sousCategorieNom || '',  // Nom de la sous-catégorie (optionnel)
-      centreId: this.centreId ? Number(this.centreId) : undefined,  // ID du centre (optionnel)
-      coutId: this.coutId ? Number(this.coutId) : undefined,  // ID du coût (optionnel)
-      etapes: etapesSimples  // Tableau simple de strings
+      urlVersFormulaire: this.urlVersFormulaire || undefined,
+      sousCategorieId: this.sousCategorieId ? Number(this.sousCategorieId) : undefined,
+      
+      // IDs optionnels
+      coutId: this.coutId ? Number(this.coutId) : undefined,
+      centreId: this.centreId ? Number(this.centreId) : undefined,
+      
+      // Étapes (tableau de strings selon la spec)
+      etapes: this.etapes.map(e => e.description || e.titre || '').filter(e => e),
+      
+      // Anciens champs (à conserver pour compatibilité si nécessaire)
+      cout: this.cout || 0,
+      typeMonnaie: this.typeMonnaie,
+      prerequis: this.prerequis,
+      documentsRequis: this.documentsRequis,
+      centres: this.centres,
+      loisArticles: this.loisArticles,
+      conseils: this.conseils,
+      piecesJustificatives: this.piecesJustificatives,
+      urlReferences: this.urlReferences
     };
     
-    // Log pour debugging
-    console.log('📤 Données envoyées au backend:', JSON.stringify(procedureData, null, 2));
+    // Supprimer les propriétés undefined pour un JSON plus propre
+    Object.keys(procedureData).forEach(key => 
+      procedureData[key] === undefined && delete procedureData[key]
+    );
+    
+    console.log('📤 Procédure complète envoyée:', JSON.stringify(procedureData, null, 2));
 
-    // Création
     this.apiService.createProcedure(procedureData).subscribe({
       next: (response: any) => {
-        console.log('Procedure created:', response);
+        console.log('✅ Procedure created:', response);
         this.successMessage = 'Procédure créée avec succès!';
         this.isLoading = false;
-        // Redirection vers la liste après succès
         setTimeout(() => {
           this.router.navigate(['/procedures']);
         }, 2000);
       },
       error: (error: any) => {
-        console.error('Error creating procedure:', error);
-        console.error('Error status:', error.status);
-        console.error('Error details:', error.error);
-        console.error('Data sent:', procedureData);
+        console.error('❌ Error creating procedure:', error);
         
-        // Message d'erreur détaillé selon le type d'erreur
         if (error.status === 400) {
-          this.errorMessage = error.error?.message || 
-            'Erreur de validation : Vérifiez que tous les champs obligatoires sont remplis correctement';
+          this.errorMessage = error.error?.message || 'Erreur de validation des données';
         } else if (error.status === 500) {
-          this.errorMessage = 'Erreur serveur : Le backend a rencontré une erreur. Vérifiez les logs du serveur.';
+          this.errorMessage = 'Erreur serveur. Vérifiez les logs du serveur.';
         } else if (error.status === 0) {
-          this.errorMessage = 'Impossible de contacter le serveur. Vérifiez que le backend est démarré.';
+          this.errorMessage = 'Impossible de contacter le serveur.';
         } else {
-          this.errorMessage = error.error?.message || 'Erreur lors de la création de la procédure';
+          this.errorMessage = error.error?.message || 'Erreur lors de la création';
         }
         
         this.isLoading = false;

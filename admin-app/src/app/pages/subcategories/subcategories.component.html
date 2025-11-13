@@ -39,7 +39,7 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th>Nom</th>
+          <th>Titre</th>
           <th>Catégorie Parente</th>
           <th>Description</th>
           <th style="width: 120px;" class="actions-column">Actions</th>
@@ -50,7 +50,7 @@
 
           <!-- Mode Lecture -->
           <ng-container *ngIf="!subcategory.isEditing">
-            <td><strong>{{ subcategory.nom }}</strong></td>
+            <td><strong>{{ subcategory.titre }}</strong></td>
             <td>
               <span class="category-badge">
                 {{ subcategory.categorie?.titre || subcategory.categorie?.nom || getCategoryName(subcategory.categorieId) }}
@@ -87,9 +87,9 @@
             <td>
               <input
                 type="text"
-                [(ngModel)]="subcategory.nom"
+                [(ngModel)]="subcategory.titre"
                 class="input-edit"
-                placeholder="Nom"
+                placeholder="Titre"
               />
             </td>
             <td>
@@ -111,7 +111,7 @@
                 placeholder="Description"
               />
             </td>
-           
+
             <td class="actions-column">
               <button
                 class="btn-save"

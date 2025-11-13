@@ -39,9 +39,8 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th style="width: 35%;">Nom</th>
-          <th style="width: 20%;">Catégorie</th>
-          <th style="width: 20%;">Sous-catégorie</th>
+          <th style="width: 55%;">Nom</th>
+          <th style="width: 25%;">Catégorie</th>
           <th style="width: 120px;" class="actions-column">Actions</th>
         </tr>
       </thead>
@@ -52,12 +51,6 @@
             <span class="category-badge">
               {{ procedure.categorie?.titre || procedure.categorie?.nom || getCategoryName(procedure.categorieId) }}
             </span>
-          </td>
-          <td>
-            <span class="subcategory-badge" *ngIf="procedure.sousCategorieId">
-              {{ procedure.sousCategorie?.nom || getSubcategoryName(procedure.sousCategorieId) }}
-            </span>
-            <span *ngIf="!procedure.sousCategorieId">—</span>
           </td>
           <td class="actions-column">
             <button 

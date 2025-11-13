@@ -10,7 +10,6 @@ import { Subscription } from 'rxjs';
 interface Procedure {
   id: number;
   nom: string;
-  description?: string;
   categorieId: number;
   sousCategorieId?: number;
   categorie?: {
@@ -35,10 +34,10 @@ interface Procedure {
 
 /**
  * Composant de gestion des procédures
- * 
+ *
  * Fonctionnalités:
  * - Liste toutes les procédures avec catégorie et sous-catégorie
- * - Édition inline simplifiée (nom, description, délai)
+ * - Édition inline simplifiée (nom, délai)
  * - Suppression avec confirmation
  * - Navigation vers l'ajout (pour création complète avec étapes, docs, etc.)
  */
@@ -56,7 +55,7 @@ export class ProceduresComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
   successMessage = '';
-  
+
   // Subscriptions pour le cache
   private proceduresSubscription?: Subscription;
   private categoriesSubscription?: Subscription;
@@ -189,7 +188,7 @@ export class ProceduresComponent implements OnInit, OnDestroy {
             this.dataCache.removeProcedure(procedure.id);
             this.successMessage = 'Procédure supprimée avec succès!';
             this.isLoading = false;
-            
+
             // Cacher le message après 3 secondes
             setTimeout(() => {
               this.successMessage = '';

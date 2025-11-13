@@ -18,9 +18,7 @@ import { CommonModule } from '@angular/common';
  *
  * Note: Les langues actuellement supportées sont:
  * - Français (fr) - Active
- * - Anglais (en) - Inactive
- * - Bambara (br) - Inactive
- * - Espagnol (es) - Active
+ * - Anglais (en) - Active
  */
 @Component({
   selector: 'app-languages',
@@ -34,9 +32,7 @@ export class LanguagesComponent {
   // TODO: Récupérer ces données depuis le backend
   languages = [
     { language: 'Français', code: 'fr', status: 'Active' },
-    { language: 'Anglais', code: 'en', status: 'Inactive' },
-    { language: 'Bambara', code: 'br', status: 'Inactive' },
-    { language: 'Espagnole', code: 'es', status: 'Active' }
+    { language: 'Anglais', code: 'en', status: 'Active' }
   ];
 
   /**

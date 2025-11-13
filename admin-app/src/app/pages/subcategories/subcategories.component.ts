@@ -9,7 +9,7 @@ import { Subscription } from 'rxjs';
 
 interface SubCategory {
   id: number;
-  nom: string;
+  titre: string;
   description?: string;
   categorieId: number;
   categorie?: {
@@ -45,7 +45,7 @@ export class SubcategoriesComponent implements OnInit, OnDestroy {
 
   // Sauvegarde des données originales pour annulation
   private originalData = new Map<number, SubCategory>();
-  
+
   // Subscriptions pour le cache
   private subcategoriesSubscription?: Subscription;
   private categoriesSubscription?: Subscription;
@@ -169,8 +169,8 @@ export class SubcategoriesComponent implements OnInit, OnDestroy {
    */
   saveSubcategory(subcategory: SubCategory) {
     // Validation
-    if (!subcategory.nom || !subcategory.categorieId) {
-      this.errorMessage = 'Le nom et la catégorie sont obligatoires';
+    if (!subcategory.titre || !subcategory.categorieId) {
+      this.errorMessage = 'Le titre et la catégorie sont obligatoires';
       return;
     }
 
@@ -179,7 +179,7 @@ export class SubcategoriesComponent implements OnInit, OnDestroy {
     this.successMessage = '';
 
     const subcategoryData = {
-      nom: subcategory.nom,
+      titre: subcategory.titre,
       description: subcategory.description || '',
       categorieId: subcategory.categorieId
     };
@@ -213,7 +213,7 @@ export class SubcategoriesComponent implements OnInit, OnDestroy {
   deleteSubcategory(subcategory: SubCategory) {
     this.dialogService.confirm({
       title: 'Confirmation de suppression',
-      message: `Êtes-vous sûr de vouloir supprimer la sous-catégorie "${subcategory.nom}" ?`,
+      message: `Êtes-vous sûr de vouloir supprimer la sous-catégorie "${subcategory.titre}" ?`,
       confirmText: 'Supprimer',
       type: 'delete'
     }).subscribe(result => {

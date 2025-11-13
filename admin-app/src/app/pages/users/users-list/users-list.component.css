@@ -36,6 +36,34 @@
   border-color: #f5c6cb;
 }
 
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.alert-info svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alert-info ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.alert-info li {
+  margin: 4px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .loading {
   text-align: center;
   padding: 40px;
@@ -94,16 +122,33 @@
 
 .actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  align-items: center;
 }
 
-.btn-edit, .btn-delete {
+.btn-edit, .btn-delete, .btn-activate, .btn-deactivate {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 5px;
+  padding: 6px;
   border-radius: 4px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Boutons désactivés */
+.btn-edit:disabled, .btn-delete:disabled, .btn-activate:disabled, .btn-deactivate:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-edit:disabled:hover, .btn-delete:disabled:hover, 
+.btn-activate:disabled:hover, .btn-deactivate:disabled:hover {
+  background-color: transparent !important;
+  transform: none !important;
 }
 
 .btn-edit {
@@ -112,6 +157,25 @@
 
 .btn-edit:hover {
   background-color: #e3f2fd;
+  transform: scale(1.1);
+}
+
+.btn-activate {
+  color: #28a745;
+}
+
+.btn-activate:hover {
+  background-color: #d4edda;
+  transform: scale(1.1);
+}
+
+.btn-deactivate {
+  color: #ffc107;
+}
+
+.btn-deactivate:hover {
+  background-color: #fff3cd;
+  transform: scale(1.1);
 }
 
 .btn-delete {
@@ -120,9 +184,38 @@
 
 .btn-delete:hover {
   background-color: #f8d7da;
+  transform: scale(1.1);
 }
 
-.btn-edit svg, .btn-delete svg {
+.btn-edit svg, .btn-delete svg, .btn-activate svg, .btn-deactivate svg {
   width: 16px;
   height: 16px;
+}
+
+/* Badge de statut */
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: sans-serif;
+}
+
+.status-active {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Style pour les lignes d'utilisateurs inactifs */
+.user-inactive {
+  opacity: 0.6;
+  background-color: #f8f9fa;
 }

@@ -1,0 +1,170 @@
+<div class="profile-page">
+  <div class="profile-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()" title="Retour">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/>
+        </svg>
+      </button>
+      <h1>Mon Profil</h1>
+    </div>
+    <button 
+      *ngIf="!isEditMode" 
+      class="btn-edit-profile" 
+      (click)="startEdit()"
+      [disabled]="isLoading"
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+      </svg>
+      Modifier
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+    </svg>
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+    </svg>
+    <div>
+      <div>{{ errorMessage }}</div>
+      <button *ngIf="!userProfile.id && !isEditMode" class="btn-complete-profile" (click)="startEdit()">
+        Compléter mon profil
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading && !userProfile.telephone" class="loading">
+    <div class="spinner"></div>
+    <p>Chargement du profil...</p>
+  </div>
+
+  <!-- Profile Card -->
+  <div *ngIf="!isLoading || userProfile.telephone" class="profile-card">
+    <div class="profile-avatar">
+      <div class="avatar-circle">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="profile-info">
+      <!-- Mode Lecture -->
+      <div *ngIf="!isEditMode" class="info-display">
+        <div class="info-item">
+          <label>Nom</label>
+          <div class="info-value">{{ userProfile.nom || '—' }}</div>
+        </div>
+
+        <div class="info-item">
+          <label>Prénom</label>
+          <div class="info-value">{{ userProfile.prenom || '—' }}</div>
+        </div>
+
+        <div class="info-item">
+          <label>Téléphone</label>
+          <div class="info-value">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" class="icon-inline">
+              <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328z"/>
+            </svg>
+            {{ userProfile.telephone || '—' }}
+          </div>
+        </div>
+
+        <div class="info-item">
+          <label>Email</label>
+          <div class="info-value">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" class="icon-inline">
+              <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383l-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z"/>
+            </svg>
+            {{ userProfile.email || 'Non renseigné' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode Édition -->
+      <div *ngIf="isEditMode" class="info-edit">
+        <div class="form-group">
+          <label for="nom">Nom *</label>
+          <input
+            type="text"
+            id="nom"
+            [(ngModel)]="userProfile.nom"
+            class="form-input"
+            placeholder="Entrez votre nom"
+            [disabled]="isLoading"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="prenom">Prénom *</label>
+          <input
+            type="text"
+            id="prenom"
+            [(ngModel)]="userProfile.prenom"
+            class="form-input"
+            placeholder="Entrez votre prénom"
+            [disabled]="isLoading"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="telephone">Téléphone *</label>
+          <input
+            type="tel"
+            id="telephone"
+            [(ngModel)]="userProfile.telephone"
+            class="form-input"
+            placeholder="Entrez votre numéro de téléphone"
+            [disabled]="isLoading"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            [(ngModel)]="userProfile.email"
+            class="form-input"
+            placeholder="Entrez votre email"
+            [disabled]="isLoading"
+          />
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="button" 
+            class="btn-save" 
+            (click)="saveProfile()"
+            [disabled]="isLoading"
+          >
+            <span *ngIf="isLoading" class="spinner-small"></span>
+            <svg *ngIf="!isLoading" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+            </svg>
+            {{ isLoading ? 'Enregistrement...' : 'Enregistrer' }}
+          </button>
+          <button 
+            type="button" 
+            class="btn-cancel" 
+            (click)="cancelEdit()"
+            [disabled]="isLoading"
+          >
+            Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

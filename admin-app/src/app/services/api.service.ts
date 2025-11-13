@@ -90,13 +90,13 @@ export class ApiService {
    * @returns Observable with the response
    */
   sendSmsCode(phoneNumber: string): Observable<any> {
-    console.log('Sending SMS code request for phone number:', phoneNumber);
+    console.log('📞 Sending ADMIN SMS code request for phone number:', phoneNumber);
     const request = {
       telephone: phoneNumber
     };
     console.log('Request body:', request);
-    
-    const observable = this.http.post(`${API_URL}/auth/connexion-telephone`, request).pipe(
+
+    const observable = this.http.post(`${API_URL}/auth/connexion-admin`, request).pipe(
       tap({
         next: (response) => {
           console.log('SMS code request successful, response:', response);
@@ -107,7 +107,7 @@ export class ApiService {
       })
     );
     console.log('Created HTTP observable for SMS code request');
-    
+
     return observable;
   }
 
@@ -118,14 +118,14 @@ export class ApiService {
    * @returns Observable with the authentication response containing token
    */
   verifySmsCode(phoneNumber: string, code: string): Observable<any> {
-    console.log('Verifying SMS code for phone number:', phoneNumber, 'with code:', code);
+    console.log('🔐 Verifying ADMIN SMS code for phone number:', phoneNumber, 'with code:', code);
     const request = {
       telephone: phoneNumber,
       code: code
     };
     console.log('Request body:', request);
-    
-    const observable = this.http.post(`${API_URL}/auth/verifier-sms`, request).pipe(
+
+    const observable = this.http.post(`${API_URL}/auth/verifier-sms-admin`, request).pipe(
       tap({
         next: (response) => {
           console.log('SMS verification request successful, response:', response);
@@ -136,7 +136,7 @@ export class ApiService {
       })
     );
     console.log('Created HTTP observable for SMS verification request');
-    
+
     return observable;
   }
 
@@ -334,7 +334,25 @@ export class ApiService {
   getUsers(): Observable<any> {
     return this.http.get(`${API_URL}/admin/utilisateurs`, { headers: this.getHeaders() });
   }
-  
+
+  /**
+   * Récupère le profil de l'utilisateur actuellement connecté
+   * Utilise le token JWT pour identifier l'utilisateur
+   * @returns Observable avec les informations de l'utilisateur connecté
+   */
+  getCurrentUserProfile(): Observable<any> {
+    return this.http.get(`${API_URL}/auth/profil`, { headers: this.getHeaders() });
+  }
+
+  /**
+   * Récupère un utilisateur par son ID
+   * @param id - ID de l'utilisateur
+   * @returns Observable avec les informations de l'utilisateur
+   */
+  getUserById(id: number): Observable<any> {
+    return this.http.get(`${API_URL}/admin/utilisateurs/${id}`, { headers: this.getHeaders() });
+  }
+
   /**
    * Crée un nouvel utilisateur
    * @param user - Objet utilisateur contenant les informations
@@ -343,7 +361,7 @@ export class ApiService {
   createUser(user: any): Observable<any> {
     return this.http.post(`${API_URL}/admin/utilisateurs`, user, { headers: this.getHeaders() });
   }
-  
+
   /**
    * Met à jour un utilisateur existant
    * @param id - ID de l'utilisateur à mettre à jour
@@ -353,7 +371,7 @@ export class ApiService {
   updateUser(id: number, user: any): Observable<any> {
     return this.http.put(`${API_URL}/admin/utilisateurs/${id}`, user, { headers: this.getHeaders() });
   }
-  
+
   /**
    * Supprime un utilisateur
    * @param id - ID de l'utilisateur à supprimer
@@ -362,18 +380,36 @@ export class ApiService {
   deleteUser(id: number): Observable<any> {
     return this.http.delete(`${API_URL}/admin/utilisateurs/${id}`, { headers: this.getHeaders() });
   }
-  
+
+  /**
+   * Active un utilisateur
+   * @param id - ID de l'utilisateur à activer
+   * @returns Observable avec la réponse d'activation
+   */
+  activateUser(id: number): Observable<any> {
+    return this.http.put(`${API_URL}/admin/utilisateurs/${id}/activer`, {}, { headers: this.getHeaders() });
+  }
+
+  /**
+   * Désactive un utilisateur
+   * @param id - ID de l'utilisateur à désactiver
+   * @returns Observable avec la réponse de désactivation
+   */
+  deactivateUser(id: number): Observable<any> {
+    return this.http.put(`${API_URL}/admin/utilisateurs/${id}/desactiver`, {}, { headers: this.getHeaders() });
+  }
+
   /**
    * Helper methods for storage operations
    */
   setStorageItem(key: string, value: string): void {
     this.storageService.setItem(key, value);
   }
-  
+
   getStorageItem(key: string): string | null {
     return this.storageService.getItem(key);
   }
-  
+
   removeStorageItem(key: string): void {
     this.storageService.removeItem(key);
   }
